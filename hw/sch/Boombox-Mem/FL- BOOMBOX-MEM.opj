@@ -1,0 +1,22 @@
+(ExpressProject "FL- BOOMBOX-MEM"
+  (ProjectVersion "19981106")
+  (ProjectType "PCB")
+  (Folder "Design Resources"
+    (Folder "Library")
+    (NoModify)
+    (File ".\fl- boombox-mem.dsn"
+      (Type "Schematic Design")))
+  (Folder "Outputs")
+  (Folder "Referenced Projects")
+  (MPSSessionName "akiba")
+  (GlobalState
+    (FileView
+      (Path "Design Resources")
+      (Path "Design Resources" ".\fl- boombox-mem.dsn")
+      (Select "Design Resources" ".\fl- boombox-mem.dsn"))
+    (HierarchyView)
+    (Doc
+      (Type "COrCapturePMDoc")
+      (Frame
+        (Placement "44 2 3 -1 -1 -8 -30 0 200 0 272"))
+      (Tab 0))))

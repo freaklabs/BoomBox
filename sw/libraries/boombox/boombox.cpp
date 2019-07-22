@@ -14,7 +14,7 @@ volatile bool auxFlag;
 // Constructor
 /************************************************************/
 Boombox::Boombox()
-{ 
+{
     pinMode(pinBusy, INPUT);
     pinMode(pinPIR, INPUT_PULLUP);
     pinMode(pinButton, INPUT_PULLUP);
@@ -27,14 +27,14 @@ Boombox::Boombox()
     pinMode(pinPIREnb, OUTPUT);
 
     digitalWrite(pinBoostEnb, HIGH);
-    digitalWrite(pinAmpShutdn, HIGH);  
+    digitalWrite(pinAmpShutdn, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinCurrEnb, HIGH);
     digitalWrite(pinRangeEnb, HIGH);
     digitalWrite(pinPIREnb, HIGH);
 
-    attachInterrupt(intPIR, Boombox::irqPIR, FALLING);
-    attachInterrupt(intAux, Boombox::irqAux, FALLING);
+    attachInterrupt(intPIR, Boombox::irqPIR, RISING);
+    attachInterrupt(intAux, Boombox::irqAux, RISING);
     setVol(_vol);
 }
 
@@ -53,19 +53,88 @@ void Boombox::init()
 /*----------------------------------------------------------*/
 // Methods for controlling the MP3 player
 /*----------------------------------------------------------*/
+/************************************************************/
+// enable watchdog timer
+/************************************************************/
+void Boombox::watchdogEnb()
+{
+    // enable watchdog timer
+    wdt_enable(WDTO_8S);
+}
 
 /************************************************************/
-// 
+// disable watchdog timer
+/************************************************************/
+void Boombox::watchdogDis()
+{
+    // disable watchdog here
+    wdt_disable();
+}
+
+/************************************************************/
+// reset the watchdog timer
+/************************************************************/
+void Boombox::watchdogKick()
+{
+    wdt_reset();
+}
+
+/************************************************************/
+// initialize the pushbutton
+/************************************************************/
+void Boombox::buttonInit()
+{
+    pinMode(pinButton, INPUT_PULLUP);
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::dispBanner()
+{
+    Serial.println("-------------------------------------------");
+    Serial.println("Boombox");
+    Serial.println("Designed by FreakLabs and Meredith Palmer");
+    Serial.print("Last modified: ");
+    Serial.println(__DATE__);
+    Serial.println("-------------------------------------------");
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::delayMS()
+{
+    delay(_delayVal);
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::delaySet(uint32_t delayVal)
+{
+    _delayVal = delayVal;
+}
+
+/************************************************************/
+//
+/************************************************************/
+uint32_t Boombox::delayGet()
+{
+    return _delayVal;
+}
+
+/************************************************************/
+//
 /************************************************************/
 void Boombox::play(uint8_t file)
-{   
+{
     uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0X00, 0x00, file , 0xEF };
     _sendCmd(buf, sizeof(buf));
 }
 
-
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::setVol(uint8_t vol)
 {
@@ -73,34 +142,34 @@ void Boombox::setVol(uint8_t vol)
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::playNext()
-{   
+{
     uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x01, 0x00, 0x00, 0x00, 0xEF };
     _sendCmd(buf, sizeof(buf));
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::playPrev()
-{   
+{
     uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x01, 0x00, 0x00, 0x00, 0xEF };
     _sendCmd(buf, sizeof(buf));
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::stop()
-{   
+{
     uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x16, 0x00, 0x00, 0x00, 0XEF };
     _sendCmd(buf, sizeof(buf));
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::pause()
 {
@@ -109,7 +178,7 @@ void Boombox::pause()
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::resume()
 {
@@ -119,7 +188,7 @@ void Boombox::resume()
 
 
 /************************************************************/
-// 
+//
 /************************************************************/
 bool Boombox::isBusy()
 {
@@ -127,7 +196,7 @@ bool Boombox::isBusy()
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::irqPIR(void)
 {
@@ -135,7 +204,7 @@ void Boombox::irqPIR(void)
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 bool Boombox::isPIREvent()
 {
@@ -143,15 +212,17 @@ bool Boombox::isPIREvent()
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::clearPIRFlag()
 {
+    // add delay to debounce events
+    delay(200);
     pirFlag = 0;
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::irqAux(void)
 {
@@ -159,19 +230,21 @@ void Boombox::irqAux(void)
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
-bool Boombox::isAuxEvent()   
+bool Boombox::isAuxEvent()
 {
     return auxFlag;
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::clearAuxFlag()
 {
-    auxFlag = 0;
+    // add delay to debounce events
+    delay(200);
+    auxFlag = false;
 }
 
 /*----------------------------------------------------------*/
@@ -179,7 +252,7 @@ void Boombox::clearAuxFlag()
 /*----------------------------------------------------------*/
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::sleep()
 {
@@ -210,7 +283,7 @@ void Boombox::sleep()
 }
 
 /************************************************************/
-// 
+//
 /************************************************************/
 void Boombox::wake()
 {
@@ -222,7 +295,7 @@ void Boombox::wake()
     digitalWrite(pinAmpShutdn, HIGH);
 
     UCSR0B = 0x98;
-    ADCSRA |= (1 << ADEN); 
+    ADCSRA |= (1 << ADEN);
 
     uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0B, 0x00, 0x00, 0x00, 0xEF};
     _sendCmd(buf, sizeof(buf));
@@ -237,8 +310,10 @@ void Boombox::wake()
 /************************************************************/
 void Boombox::_sendCmd(uint8_t *buf, uint8_t len)
 {
-    for (int i=0; i<len; i++) 
+    cli();
+    for (int i=0; i<len; i++)
     {
-        ss.write( buf[i] ); 
+        ss.write( buf[i] );
     }
+    sei();
 }

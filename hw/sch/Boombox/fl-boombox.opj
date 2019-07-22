@@ -8,6 +8,8 @@
       (File "c:\projects\freaklabs\lib\orcad_lib\ic.olb"
         (Type "Schematic Library"))
       (File "c:\projects\freaklabs\lib\orcad_lib\misc.olb"
+        (Type "Schematic Library"))
+      (File "c:\projects\freaklabs\lib\orcad_lib\passives.olb"
         (Type "Schematic Library")))
     (NoModify)
     (File ".\fl-boombox.dsn"
@@ -84,7 +86,7 @@
     (BOM_Scope "0")
     (BOM_Mode "0")
     (BOM_Report_File
-       "H:\Projects\Freaklabs\Hardware\trunk\freaklabs\Releases\2019-05-21 - FL-BOOMBOX-v0.5\Design Files\FL-BOOMBOX.BOM")
+       "C:\PROJECTS\FREAKLABS\RELEASES\2019-05-21 - FL-BOOMBOX-V0.5\DESIGN FILES\FL-BOOMBOX.BOM")
     (BOM_Merge_Include "FALSE")
     (BOM_Property_Combine_7.0 "{Item}\t{Quantity}\t{Reference}\t{Value}")
     (BOM_Header "Item\tQuantity\tReference\tPart")
@@ -103,6 +105,10 @@
       (Type "Report")))
   (Folder "Referenced Projects")
   (PartMRUSelector
+    (JP2/THRU_VERT
+      (FullPartName "JP2/THRU_VERT.Normal")
+      (LibraryName "C:\PROJECTS\FREAKLABS\LIB\ORCAD_LIB\PASSIVES.OLB")
+      (DeviceIndex "0"))
     (POT/THRUHOLE
       (FullPartName "POT/THRUHOLE.Normal")
       (LibraryName "C:\PROJECTS\FREAKLABS\LIB\ORCAD_LIB\PASSIVES.OLB")
@@ -110,64 +116,26 @@
   (GlobalState
     (FileView
       (Path "Design Resources")
-      (Path "Design Resources"
-         "h:\projects\freaklabs\hardware\trunk\freaklabs\releases\2019-05-21 - fl-boombox-v0.5\design files\fl-boombox.dsn")
-      (Path "Design Resources"
-         "h:\projects\freaklabs\hardware\trunk\freaklabs\releases\2019-05-21 - fl-boombox-v0.5\design files\fl-boombox.dsn"
-         "BOOMBOX")
+      (Path "Design Resources" ".\fl-boombox.dsn")
+      (Path "Design Resources" ".\fl-boombox.dsn" "BOOMBOX")
       (Path "Design Resources" "Library")
       (Path "Outputs")
-      (Select "Design Resources"
-         "h:\projects\freaklabs\hardware\trunk\freaklabs\releases\2019-05-21 - fl-boombox-v0.5\design files\fl-boombox.dsn"))
+      (Select "Design Resources" ".\fl-boombox.dsn" "BOOMBOX" "MCU"))
     (HierarchyView)
     (Doc
       (Type "COrCapturePMDoc")
       (Frame
-        (Placement "44 0 1 -1 -1 -8 -30 0 200 0 322"))
+        (Placement "44 2 3 -1 -1 -8 -30 0 200 0 322"))
       (Tab 0))
     (Doc
       (Type "COrSchematicDoc")
       (Frame
-        (Placement "44 0 1 -1 -1 -8 -30 100 1698 100 721")
-        (Scroll "126 336")
-        (Zoom "176")
-        (Occurrence "/"))
-      (Path
-         "H:\PROJECTS\FREAKLABS\HARDWARE\TRUNK\FREAKLABS\RELEASES\2019-05-21 - FL-BOOMBOX-V0.5\DESIGN FILES\FL-BOOMBOX.DSN")
-      (Schematic "BOOMBOX")
-      (Page "AUDIO"))
-    (Doc
-      (Type "COrSchematicDoc")
-      (Frame
-        (Placement "44 0 1 -1 -1 -8 -30 175 1748 175 811")
-        (Scroll "-166 0")
-        (Zoom "123")
-        (Occurrence "/"))
-      (Path
-         "H:\PROJECTS\FREAKLABS\HARDWARE\TRUNK\FREAKLABS\RELEASES\2019-05-21 - FL-BOOMBOX-V0.5\DESIGN FILES\FL-BOOMBOX.DSN")
-      (Schematic "BOOMBOX")
-      (Page "CONNECTORS"))
-    (Doc
-      (Type "COrSchematicDoc")
-      (Frame
-        (Placement "44 0 1 -1 -1 -8 -30 125 1723 125 746")
-        (Scroll "-15 0")
+        (Placement "44 0 1 -1 -1 -8 -30 200 1290 200 621")
+        (Scroll "248 0")
         (Zoom "100")
         (Occurrence "/"))
-      (Path
-         "H:\PROJECTS\FREAKLABS\HARDWARE\TRUNK\FREAKLABS\RELEASES\2019-05-21 - FL-BOOMBOX-V0.5\DESIGN FILES\FL-BOOMBOX.DSN")
+      (Path "C:\PROJECTS\GITHUB\BOOMBOX\HW\SCH\FL-BOOMBOX.DSN")
       (Schematic "BOOMBOX")
-      (Page "MCU"))
-    (Doc
-      (Type "COrSchematicDoc")
-      (Frame
-        (Placement "44 2 3 -1 -1 -8 -30 225 1823 225 846")
-        (Scroll "-160 0")
-        (Zoom "100")
-        (Occurrence "/"))
-      (Path
-         "H:\PROJECTS\FREAKLABS\HARDWARE\TRUNK\FREAKLABS\RELEASES\2019-05-21 - FL-BOOMBOX-V0.5\DESIGN FILES\FL-BOOMBOX.DSN")
-      (Schematic "BOOMBOX")
-      (Page "POWER")))
+      (Page "MCU")))
   (MPSSessionName "akiba")
   (ISPCBBASICLICENSE "false"))
