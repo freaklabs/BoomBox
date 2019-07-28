@@ -9,10 +9,11 @@ int index = 0;
 // setup
 /************************************************************/
 void setup() 
-{
+{   
   bb.init();
   chibiCmdInit(57600);
 
+  bb.dispBanner();
   chibiCmdAdd("play", cmdPlay);
   chibiCmdAdd("stop", cmdStop);
   chibiCmdAdd("vol", cmdSetVolume);
@@ -26,7 +27,7 @@ void setup()
 /************************************************************/
 void loop() 
 {
-  chibiCmdPoll();
+//  chibiCmdPoll();
 
   if (bb.isPIREvent() == true)
   {

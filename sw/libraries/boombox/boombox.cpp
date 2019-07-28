@@ -16,8 +16,8 @@ volatile bool auxFlag;
 Boombox::Boombox()
 {
     pinMode(pinBusy, INPUT);
-    pinMode(pinPIR, INPUT_PULLUP);
-    pinMode(pinButton, INPUT_PULLUP);
+    pinMode(pinPIR, INPUT);
+    pinMode(pinButton, INPUT);
 
     pinMode(pinAmpShutdn, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
