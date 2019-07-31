@@ -25,6 +25,7 @@ Boombox::Boombox()
     pinMode(pinCurrEnb, OUTPUT);
     pinMode(pinRangeEnb, OUTPUT);
     pinMode(pinPIREnb, OUTPUT);
+    pinMode(pinBusy, INPUT_PULLUP);
 
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
@@ -136,6 +137,28 @@ void Boombox::play(uint8_t file)
 /************************************************************/
 //
 /************************************************************/
+void Boombox::playBusy(uint8_t file)
+{
+    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0X00, 0x00, file , 0xEF };
+    _sendCmd(buf, sizeof(buf));
+    while (isBusy())
+    {
+
+    }
+    delay(250);
+}
+
+/************************************************************/
+//
+/************************************************************/
+bool Boombox::isBusy()
+{
+    return digitalRead(pinBusy) == LOW;
+}
+
+/************************************************************/
+//
+/************************************************************/
 void Boombox::setVol(uint8_t vol)
 {
     _vol = constrain(vol, 0, 30);
@@ -186,15 +209,6 @@ void Boombox::resume()
     _sendCmd(buf, sizeof(buf));
 }
 
-
-/************************************************************/
-//
-/************************************************************/
-bool Boombox::isBusy()
-{
-    return digitalRead(pinBusy) == LOW;
-}
-
 /************************************************************/
 //
 /************************************************************/
@@ -243,7 +257,7 @@ bool Boombox::isAuxEvent()
 void Boombox::clearAuxFlag()
 {
     // add delay to debounce events
-    delay(200);
+    delay(1000);
     auxFlag = false;
 }
 
@@ -257,8 +271,8 @@ void Boombox::clearAuxFlag()
 void Boombox::sleep()
 {
     // send sleep command to mp3 chip
-    uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0A, 0x00, 0x00, 0x00, 0xEF};
-    _sendCmd(buf, sizeof(buf));
+    //uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0A, 0x00, 0x00, 0x00, 0xEF};
+    //_sendCmd(buf, sizeof(buf));
 
     // shut down everything else
     digitalWrite(pinBoostEnb, LOW);
@@ -279,6 +293,7 @@ void Boombox::sleep()
     // write sleep mode
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sleep_enable();                       // setting up for sleep ...
+    sleep_bod_disable();
     sleep_mode();
 }
 
@@ -297,8 +312,11 @@ void Boombox::wake()
     UCSR0B = 0x98;
     ADCSRA |= (1 << ADEN);
 
-    uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0B, 0x00, 0x00, 0x00, 0xEF};
-    _sendCmd(buf, sizeof(buf));
+    // need a delay here to start up the mp3 player
+    delay(700);
+
+    //uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0B, 0x00, 0x00, 0x00, 0xEF};
+    //_sendCmd(buf, sizeof(buf));
 }
 
 /*----------------------------------------------------------*/

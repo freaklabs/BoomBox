@@ -12,7 +12,7 @@ public:
     uint8_t pinButton = 3;
     uint8_t pinAmpShutdn = 5;
     uint8_t pinBusy = 11;
-    uint8_t pinBoostEnb = 3;
+    uint8_t pinBoostEnb = 4;
     uint8_t pinMp3Enb = 6;
     uint8_t pinCurrEnb = 7;
     uint8_t pinRangeEnb = 16;
@@ -38,6 +38,7 @@ public:
     void playNext();
     void playPrev();
     void play(uint8_t file);
+    void playBusy(uint8_t file);
     void setVol(uint8_t vol);
     void stop();
     void pause();
