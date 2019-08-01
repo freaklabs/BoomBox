@@ -7,6 +7,8 @@ Uses trailcam to trigger sound effects
 
 // customize MAX_SOUNDS based on number of samples in MP3 lib
 #define MAX_SOUNDS 23   
+#define DELAY_TIME 30000 // delay for 30 seconds
+#define DELAY_WAKE 300
 
 int index = 0;
 
@@ -15,22 +17,8 @@ int index = 0;
 /************************************************************/
 void setup() 
 {
-    chibiCmdInit(57600);
-  
     // initialize system
     bb.init();
-
-    // add commands here
-    chibiCmdAdd("play", cmdPlay);
-    chibiCmdAdd("stop", cmdStop);
-    chibiCmdAdd("vol", cmdSetVolume);
-    chibiCmdAdd("pause", cmdPause);
-    chibiCmdAdd("resume", cmdResume);
-    chibiCmdAdd("sleep", cmdSleep);
-    chibiCmdAdd("shutdown", cmdShutdown
-    
-    );
-    chibiCmdAdd("setdelay", cmdSetDelay);
         
     // enable watchdog timer
     bb.watchdogEnb();
@@ -44,8 +32,6 @@ void setup()
 /************************************************************/
 void loop() 
 {
-    //chibiCmdPoll();
-  
     // reset the watchdog timer so it doesn't reset system
     bb.watchdogKick();
 
@@ -66,13 +52,16 @@ void loop()
         Serial.print("Playing index: ");
         Serial.println(index);
 
+        // play music here
         bb.playBusy(index);
+
+        // delay for DELAY_TIME milliseconds. should be adjusted to 
+        // longest sample that will be played
+        delay(DELAY_TIME); 
+
+        // clear interrupt flag after sample is played
         bb.clearAuxFlag();
     }
-
-    // print sleep message and give some time to print it out
-    Serial.println("Sleeping");
-    delay(300);
 
     // disable watchdog before sleeping
     bb.watchdogDis();
@@ -87,8 +76,10 @@ void loop()
     bb.watchdogEnb();
 
     // print wake message and add some delay
+    // delay needed to print message and also 
+    // wait for mp3 decoder IC to boot
     Serial.println("Waking");
-    delay(300);
+    delay(DELAY_WAKE);
 }
 
 /************************************************************/
