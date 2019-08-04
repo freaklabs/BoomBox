@@ -313,7 +313,7 @@ void Boombox::wake()
     ADCSRA |= (1 << ADEN);
 
     // need a delay here to start up the mp3 player
-    delay(700);
+    delay(1000);
 
     //uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0B, 0x00, 0x00, 0x00, 0xEF};
     //_sendCmd(buf, sizeof(buf));

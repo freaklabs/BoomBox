@@ -6,9 +6,8 @@ Uses trailcam to trigger sound effects
 #include "chibi.h"
 
 // customize MAX_SOUNDS based on number of samples in MP3 lib
-#define MAX_SOUNDS 23   
-#define DELAY_TIME 30000 // delay for 30 seconds
-#define DELAY_WAKE 300
+#define MAX_SOUNDS 30   
+#define DELAY_TIME 10000 // delay for DELAY_TIME milliseconds
 
 int index = 0;
 
@@ -17,14 +16,24 @@ int index = 0;
 /************************************************************/
 void setup() 
 {
+    chibiCmdInit(57600);
+
+    // add commands here
+    chibiCmdAdd("play", cmdPlay);
+    chibiCmdAdd("stop", cmdStop);
+    chibiCmdAdd("vol", cmdSetVolume);
+    chibiCmdAdd("pause", cmdPause);
+    chibiCmdAdd("resume", cmdResume);
+    chibiCmdAdd("sleep", cmdSleep);
+    chibiCmdAdd("shutdown", cmdShutdown);
+    
     // initialize system
     bb.init();
-        
-    // enable watchdog timer
-    bb.watchdogEnb();
     
     // display setup banner
     bb.dispBanner();
+
+    delay(500);
 }
 
 /************************************************************/
@@ -32,9 +41,8 @@ void setup()
 /************************************************************/
 void loop() 
 {
-    // reset the watchdog timer so it doesn't reset system
-    bb.watchdogKick();
-
+    chibiCmdPoll();
+  
     // check if auxiliary (trailcam) event has triggered
     if (bb.isAuxEvent() == true)
     {
@@ -63,23 +71,11 @@ void loop()
         bb.clearAuxFlag();
     }
 
-    // disable watchdog before sleeping
-    bb.watchdogDis();
-
     // go to sleep here
     bb.sleep();
 
     // an interrupt occurred. wake up!
     bb.wake();
-
-    // re-enable watchdog timer
-    bb.watchdogEnb();
-
-    // print wake message and add some delay
-    // delay needed to print message and also 
-    // wait for mp3 decoder IC to boot
-    Serial.println("Waking");
-    delay(DELAY_WAKE);
 }
 
 /************************************************************/
@@ -167,6 +163,8 @@ void cmdSleep(int arg_cnt, char **args)
   // can only wake up from external interrupt, 
   // ie: button push or motion event
   bb.wake();
+
+  bb.play(1);
 }
 
 /*-----------------------------------------------------------*/
@@ -179,5 +177,3 @@ void cmdSetDelay(int arg_cnt, char **args)
     Serial.print("Delay has been set to: ");
     Serial.println(bb.delayGet());
 }
-
-
