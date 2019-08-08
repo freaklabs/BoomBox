@@ -29,6 +29,9 @@ void setup()
     
     // initialize system
     bb.init();
+
+    // initialize the pushbutton by adding pullup
+    bb.buttonInit();
     
     // display setup banner
     bb.dispBanner();
@@ -71,6 +74,29 @@ void loop()
         bb.clearPIRFlag();
     }
 
+
+    if (bb.isAuxEvent() == true)
+    {
+        // button has been pushed
+        Serial.println("Button event.");
+    
+        if (index < MAX_SOUNDS)
+        {
+            index++;
+        }
+        else
+        {
+            index = 1;
+        }
+        bb.playBusy(index);
+
+        // delay for DELAY_TIME milliseconds. should be adjusted to 
+        // longest sample that will be played
+        delay(DELAY_TIME); 
+        
+        bb.clearAuxFlag();
+    }
+ 
     // go to sleep here
     bb.sleep();
 
