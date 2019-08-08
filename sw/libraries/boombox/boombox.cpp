@@ -25,7 +25,7 @@ Boombox::Boombox()
     pinMode(pinCurrEnb, OUTPUT);
     pinMode(pinRangeEnb, OUTPUT);
     pinMode(pinPIREnb, OUTPUT);
-    pinMode(pinBusy, INPUT_PULLUP);
+    pinMode(pinBusy, INPUT);
 
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
@@ -270,17 +270,14 @@ void Boombox::clearAuxFlag()
 /************************************************************/
 void Boombox::sleep()
 {
-    // send sleep command to mp3 chip
-    //uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0A, 0x00, 0x00, 0x00, 0xEF};
-    //_sendCmd(buf, sizeof(buf));
-
     // shut down everything else
     digitalWrite(pinBoostEnb, LOW);
     digitalWrite(pinMp3Enb, LOW);
     digitalWrite(pinCurrEnb, LOW);
     digitalWrite(pinRangeEnb, LOW);
-    digitalWrite(pinPIREnb, LOW);
     digitalWrite(pinAmpShutdn, LOW);
+    pinMode(pinPIREnb, INPUT_PULLUP);
+
 
     // disable UART
     UCSR0B = 0x00;
@@ -293,7 +290,6 @@ void Boombox::sleep()
     // write sleep mode
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     sleep_enable();                       // setting up for sleep ...
-    sleep_bod_disable();
     sleep_mode();
 }
 
@@ -302,11 +298,12 @@ void Boombox::sleep()
 /************************************************************/
 void Boombox::wake()
 {
+    pinMode(pinPIREnb, OUTPUT);
+    digitalWrite(pinPIREnb, HIGH);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinCurrEnb, HIGH);
     digitalWrite(pinRangeEnb, HIGH);
-    digitalWrite(pinPIREnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
 
     UCSR0B = 0x98;
@@ -314,9 +311,6 @@ void Boombox::wake()
 
     // need a delay here to start up the mp3 player
     delay(1000);
-
-    //uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0B, 0x00, 0x00, 0x00, 0xEF};
-    //_sendCmd(buf, sizeof(buf));
 }
 
 /*----------------------------------------------------------*/
