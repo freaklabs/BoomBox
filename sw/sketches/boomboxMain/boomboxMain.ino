@@ -7,7 +7,12 @@ Uses trailcam to trigger sound effects
 
 // customize MAX_SOUNDS based on number of samples in MP3 lib
 #define MAX_SOUNDS 30   
-#define DELAY_TIME 10000 // delay for DELAY_TIME milliseconds
+
+// delay for DELAY_TIME milliseconds after trigger occurs
+uint32_t delayTime = 30000;        
+
+// play sound for DURATION_TIME milliseconds
+uint32_t durationTime = 10000;   
 
 int index = 0;
 
@@ -48,6 +53,10 @@ void loop()
     {
         // button has been pushed 
         Serial.println("Trailcam event.");
+
+        // delay for delayTime milliseconds after trigger has happened. 
+        // This delays playing the sound immediately after trigger 
+        delay(delayTime);
         
         if (index < MAX_SOUNDS)
         {
@@ -63,9 +72,9 @@ void loop()
         // play music here
         bb.playBusy(index);
 
-        // delay for DELAY_TIME milliseconds. should be adjusted to 
+        // delay for durationTime milliseconds. should be adjusted to 
         // longest sample that will be played
-        delay(DELAY_TIME); 
+        delay(durationTime); 
 
         // clear interrupt flag after sample is played
         bb.clearAuxFlag();
