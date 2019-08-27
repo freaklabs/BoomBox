@@ -5,6 +5,8 @@ Uses trailcam to trigger sound effects
 #include "boombox.h"
 #include "chibi.h"
 
+//hey, this is a test
+
 // customize MAX_SOUNDS based on number of samples in MP3 lib
 #define MAX_SOUNDS 30   
 
