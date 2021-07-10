@@ -5,16 +5,14 @@ Uses trailcam to trigger sound effects
 #include "boombox.h"
 #include "chibi.h"
 
-//hey, this is a test
-
 // customize MAX_SOUNDS based on number of samples in MP3 lib
-#define MAX_SOUNDS 30   
+#define MAX_SOUNDS 5   
 
 // delay for delayTime milliseconds after trigger occurs
 uint32_t delayTime = 0;        
 
 // play sound and then wait for durationTime milliseconds
-uint32_t durationTime = 60000;   
+uint32_t durationTime = 30000;   
 
 // delay for offDelay milliseconds after sound finishes playing
 uint32_t offDelayTime = 30000;
@@ -26,17 +24,8 @@ int index = 0;
 /************************************************************/
 void setup() 
 {
-    chibiCmdInit(57600);
-
-    // add commands here
-    chibiCmdAdd("play", cmdPlay);
-    chibiCmdAdd("stop", cmdStop);
-    chibiCmdAdd("vol", cmdSetVolume);
-    chibiCmdAdd("pause", cmdPause);
-    chibiCmdAdd("resume", cmdResume);
-    chibiCmdAdd("sleep", cmdSleep);
-    chibiCmdAdd("shutdown", cmdShutdown);
-    
+    Serial.begin(57600);
+        
     // initialize system
     bb.init();
     
@@ -51,8 +40,6 @@ void setup()
 /************************************************************/
 void loop() 
 {
-    chibiCmdPoll();
-  
     // check if auxiliary (trailcam) event has triggered
     if (bb.isAuxEvent() == true)
     {
@@ -95,104 +82,4 @@ void loop()
 
     // an interrupt occurred. wake up!
     bb.wake();
-}
-
-/************************************************************/
-// command line functions
-/************************************************************/
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdPlay(int arg_cnt, char **args)
-{
-  uint8_t file = chibiCmdStr2Num(args[1], 10);
-  bb.play(file);
-}
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdSetVolume(int arg_cnt, char **args)
-{
-  uint8_t vol = chibiCmdStr2Num(args[1], 10);
-  bb.setVol(vol);
-}
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdPause(int arg_cnt, char **args)
-{
-  bb.pause();
-}
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdResume(int arg_cnt, char **args)
-{
-  bb.resume();
-}
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdStop(int arg_cnt, char **args)
-{
-  bb.stop();
-}
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdShutdown(int arg_cnt, char **args)
-{
-    // shut down everything else
-    digitalWrite(bb.pinBoostEnb, LOW);
-    digitalWrite(bb.pinMp3Enb, LOW);
-    digitalWrite(bb.pinCurrEnb, LOW);
-    digitalWrite(bb.pinRangeEnb, LOW);
-    digitalWrite(bb.pinPIREnb, LOW);
-    digitalWrite(bb.pinAmpShutdn, LOW);
-
-    delay(500);
-
-    digitalWrite(bb.pinBoostEnb, HIGH);
-    digitalWrite(bb.pinMp3Enb, HIGH);
-    digitalWrite(bb.pinCurrEnb, HIGH);
-    digitalWrite(bb.pinRangeEnb, HIGH);
-    digitalWrite(bb.pinPIREnb, HIGH);
-    digitalWrite(bb.pinAmpShutdn, HIGH);
-
-    Serial.println("Playing");
-    delay(500);
-    bb.play(1);
-}
-
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdSleep(int arg_cnt, char **args)
-{
-  bb.sleep();
-
-  // need to wake up if you sleep. 
-  // can only wake up from external interrupt, 
-  // ie: button push or motion event
-  bb.wake();
-
-  bb.play(1);
-}
-
-/*-----------------------------------------------------------*/
-// 
-/*-----------------------------------------------------------*/
-void cmdSetDelay(int arg_cnt, char **args)
-{
-    uint8_t delayVal = chibiCmdStr2Num(args[1], 10);
-    bb.delaySet(delayVal);
-    Serial.print("Delay has been set to: ");
-    Serial.println(bb.delayGet());
 }
