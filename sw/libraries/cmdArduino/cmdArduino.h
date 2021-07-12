@@ -38,56 +38,35 @@
 
 */
 /**************************************************************************/
-#ifndef CHIBI_H
-#define CHIBI_H
+#ifndef CMDARDUINO_H
+#define CMDARDUINO_H
 
-// For handling Arduino 1.0 compatibility and backwards compatibility
-#if ARDUINO >= 100
-    #include "Arduino.h"
-#else
-    #include "WProgram.h"
-#endif
+#define MAX_MSG_SIZE    60
+#include <stdint.h>
 
-#include "chibiUsrCfg.h"
+// command line structure
+typedef struct _cmd_t
+{
+    char *cmd;
+    void (*func)(int argc, char **argv);
+    struct _cmd_t *next;
+} cmd_t;
 
-#define BROADCAST_ADDR 0xFFFF
+class Cmd
+{
+public:
+    Cmd();
+    void begin(uint32_t speed);
+    void poll();
+    void add(const char *name, void (*func)(int argc, char **argv));
+    uint32_t conv(char *str, uint8_t base=10);
 
-void chibiInit();
-void chibiSetShortAddr(uint16_t addr);
-uint16_t chibiGetShortAddr();
-void chibiSetIEEEAddr(uint8_t *ieee_addr);
-void chibiGetIEEEAddr(uint8_t *ieee_addr);
-uint8_t chibiRegRead(uint8_t addr);
-void chibiRegWrite(uint8_t addr, uint8_t val);
-uint8_t chibiTx(uint16_t addr, uint8_t *data, uint8_t len);
-uint8_t chibiDataRcvd();
-uint8_t chibiGetData(uint8_t *data);
-uint8_t chibiGetRSSI();
-uint16_t chibiGetSrcAddr();
-uint8_t chibiSetChannel(uint8_t channel);
-uint8_t chibiGetChannel();
-uint8_t chibiGetPartID();
-void chibiSleepRadio(uint8_t enb);
-void chibiCmdInit(uint32_t speed);
-void chibiCmdPoll();
-void chibiCmdAdd(char *name, void (*func)(int argc, char **argv));
-uint32_t chibiCmdStr2Num(char *str, uint8_t base);
+private:
+    void display();
+    void parse(char *cmd);
+    void handler();    
+};
 
-void chibiAesInit(uint8_t *key);
-uint8_t chibiAesEncrypt(uint8_t len, uint8_t *plaintext, uint8_t *ciphertext);
-uint8_t chibiAesDecrypt(uint8_t len, uint8_t *plaintext, uint8_t *ciphertext);
-void chibiSetDataRate(uint8_t rate);
-uint8_t chibiGetRand();
-void chibiSetMode(uint8_t mode);
-uint16_t chibiBufGetRemaining();
-void chibiSetRetries(uint8_t);
+extern Cmd cmd;
 
-void chibiAesTest(uint8_t *key);
-
-#if ((FREAKDUINO_LONG_RANGE == 1) || (SABOTEN == 1) || (ARASHI_ENET_GATEWAY_LR == 1) || (FREAKDUINO1284PLR == 1) || (FREAKUSB1284PLR == 1))
-    void chibiHighGainModeEnable();
-    void chibiHighGainModeDisable();
-#endif
-
-#endif
-
+#endif //CMDARDUINO_H

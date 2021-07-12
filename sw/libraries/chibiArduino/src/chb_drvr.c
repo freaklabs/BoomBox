@@ -350,6 +350,15 @@ U8 chb_get_rand()
 
 /**************************************************************************/
 /*!
+*/
+/**************************************************************************/
+uint8_t chb_get_mode()
+{
+    return chb_reg_read(TRX_CTRL_2);
+}
+
+/**************************************************************************/
+/*!
     This function is only for the AT86RF212 868/915 MHz chips.
     Set the channel mode, BPSK, OQPSK, etc...
 */
@@ -727,12 +736,26 @@ U8 chb_get_part_num()
     }
 #endif
 
+
+/**************************************************************************/
+/*!
+    chb_set_retries
+*/
+/**************************************************************************/
+void chb_set_retries(uint8_t retries)
+{
+    if (retries < MAX_RETRIES)
+    {
+        chb_reg_read_mod_write(XAH_CTRL_0, retries << CHB_MAX_FRAME_RETRIES_POS, 0xF << CHB_MAX_FRAME_RETRIES_POS);
+    }
+}
+
 /**************************************************************************/
 /*!
     Initialize the radio registers.
 */
 /**************************************************************************/
-static void chb_radio_init()
+static uint8_t chb_radio_init()
 {
     U8 ieee_addr[8];
     U8 rnd, tmp;
@@ -806,30 +829,34 @@ static void chb_radio_init()
         // all data rates.
         chb_reg_read_mod_write(XOSC_CTRL, 0x04, 0x0F);
 
-        #if (CHIBI_PROMISCUOUS == 0)
-            // set autocrc mode
-            chb_reg_read_mod_write(TRX_CTRL1, 1 << 5, 1 << 5);
-        #endif
-
-          // set the power to 5 dBm, the max for the CC1190 front end
-          chb_reg_write(PHY_TX_PWR, 0x84);
+#if (CHIBI_PROMISCUOUS == 0)
+        // set autocrc mode
+        chb_reg_read_mod_write(TRX_CTRL1, 1 << 5, 1 << 5);
+#endif
 
           // set crystal trim to improve signal reception
           // found that a value of 0xA works well across all channels &
           // all modes w/long range board.
           chb_reg_read_mod_write(XOSC_CTRL, 0x0A, 0x0F);
 
-          // enable the high gain mode pin on the rx amp
-          #if (ARASHI_ENET_GATEWAY_LR == 1)
-            DDRC |= 1<<5;
-            PORTC |= 1<<5; 
-          #elif ((SABOTEN == 1) || (FREAKUSB1284PLR == 1) || (FREAKDUINO1284PLR == 1) || (FREAKDUINO1284P == 1))
-            DDRC |= 1<<6;
-            PORTC |= 1<<6;
-          #else
-            DDRB |= 1<<7;
-            PORTB |= (1<<7);
-          #endif
+        #if ((SABOTEN == 1) || (FREAKUSB1284PLR == 1) || (FREAKDUINO1284PLR == 1) || (FREAKDUINO_LONG_RANGE == 1) || (FREAKUSBLR == 1) || (ARASHI_ENET_GATEWAY_LR == 1))
+            // set the power to 5 dBm, the max for the CC1190 front end
+            chb_reg_write(PHY_TX_PWR, 0x84);
+
+                  // enable the high gain mode pin on the rx amp
+            #if (ARASHI_ENET_GATEWAY_LR == 1)
+                DDRC |= 1<<5;
+                PORTC |= 1<<5; 
+            #elif ((SABOTEN == 1) || (FREAKUSB1284PLR == 1) || (FREAKDUINO1284PLR == 1))
+                DDRC |= 1<<6;
+                PORTC |= 1<<6;
+            #else
+                DDRB |= 1<<7;
+                PORTB |= (1<<7);
+            #endif
+        #endif
+
+
         break;
 
     default:
@@ -864,12 +891,7 @@ static void chb_radio_init()
     // make sure we're in the right state
     if (chb_get_state() != RX_STATE)
     {
-        // ERROR occurred initializing the radio. Print out error message.
-        char buf[50];
-
-        // grab the error message from flash & print it out
-        strcpy_P(buf, chb_err_init);
-        Serial.print(buf);
+        return 0;
     }
 
     // init the CSMA random seed value
@@ -885,6 +907,7 @@ static void chb_radio_init()
         rnd = chb_get_rand();
         chb_reg_write(CSMA_SEED_0, rnd);
     } 
+    return 1;
 }
 
 /**************************************************************************/
@@ -894,6 +917,8 @@ static void chb_radio_init()
 /**************************************************************************/
 void chb_drvr_init()
 {
+    char buf[50];
+    
     // config SPI for at86rf230 access
     chb_spi_init();
 
@@ -902,7 +927,17 @@ void chb_drvr_init()
     CHB_SLPTR_DISABLE();
 
     // config radio
-    chb_radio_init();
+    for (int i=0; i<3; i++)
+    {
+        if (chb_radio_init()) 
+        {
+            return;
+        }
+        delay(100);
+    }
+    // radio could not be initialized. Print out error message.
+    strcpy_P(buf, chb_err_init);
+    Serial.print(buf);
 }
 
 /**************************************************************************/
