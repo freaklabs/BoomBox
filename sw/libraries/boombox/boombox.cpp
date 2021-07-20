@@ -22,19 +22,12 @@ Boombox::Boombox()
     pinMode(pinAmpShutdn, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
     pinMode(pinMp3Enb, OUTPUT);
-    pinMode(pinCurrEnb, OUTPUT);
-    pinMode(pinRangeEnb, OUTPUT);
-    pinMode(pinPIREnb, OUTPUT);
     pinMode(pinBusy, INPUT);
 
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
-    digitalWrite(pinCurrEnb, HIGH);
-    digitalWrite(pinRangeEnb, HIGH);
-    digitalWrite(pinPIREnb, HIGH);
 
-    attachInterrupt(intPIR, Boombox::irqPIR, RISING);
     attachInterrupt(intAux, Boombox::irqAux, RISING);
     setVol(_vol);
 }
@@ -273,10 +266,7 @@ void Boombox::sleep()
     // shut down everything else
     digitalWrite(pinBoostEnb, LOW);
     digitalWrite(pinMp3Enb, LOW);
-    digitalWrite(pinCurrEnb, LOW);
-    digitalWrite(pinRangeEnb, LOW);
     digitalWrite(pinAmpShutdn, LOW);
-    pinMode(pinPIREnb, INPUT_PULLUP);
 
 
     // disable UART
@@ -298,16 +288,9 @@ void Boombox::sleep()
 /************************************************************/
 void Boombox::wake()
 {
-    pinMode(pinPIREnb, OUTPUT);
-    digitalWrite(pinPIREnb, HIGH);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
-    digitalWrite(pinCurrEnb, HIGH);
-    digitalWrite(pinRangeEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
-
-    UCSR0B = 0x98;
-    ADCSRA |= (1 << ADEN);
 
     // need a delay here to start up the mp3 player
     delay(1000);
