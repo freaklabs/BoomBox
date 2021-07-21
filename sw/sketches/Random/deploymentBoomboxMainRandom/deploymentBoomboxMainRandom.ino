@@ -7,23 +7,28 @@ Uses trailcam to trigger sound effects
 
 // customize MAX_SOUNDS based on number of samples in MP3 lib
 #define MAX_SOUNDS 5   
+#define RANDOMIZING_PIN 5
 
 // delay for delayTime milliseconds after trigger occurs
 uint32_t delayTime = 0;        
 
 // play sound and then wait for durationTime milliseconds
-uint32_t durationTime = 30000;   
+uint32_t durationTime = 10000;   
 
 // delay for offDelay milliseconds after sound finishes playing
-uint32_t offDelayTime = 30000;
+uint32_t offDelayTime = 0;
 
 int index = 0;
+uint16_t playList[MAX_SOUNDS];
+char buf[100];
 
 /************************************************************/
 // setup
 /************************************************************/
 void setup() 
 {
+    uint16_t randSeed;
+    
     Serial.begin(57600);
         
     // initialize system
@@ -31,6 +36,12 @@ void setup()
     
     // display setup banner
     bb.dispBanner();
+
+    // shuffle the random number generator so it won't always
+    // give the same random sequence
+    randSeed = analogRead(RANDOMIZING_PIN);
+    randomSeed(randSeed);
+    shufflePlaylist();
 
     delay(500);
 }
@@ -42,7 +53,7 @@ void loop()
 {
     // check if auxiliary (trailcam) event has triggered
     if (bb.isAuxEvent() == true)
-    {
+    {                        
         // button has been pushed 
         Serial.println("Trailcam event.");
 
@@ -50,24 +61,27 @@ void loop()
         // This delays playing the sound immediately after trigger 
         delay(delayTime);
         
-        if (index < MAX_SOUNDS)
+        // if we've reached the end of the playlist, 
+        // shuffle playlist and then restart               
+        if (index == MAX_SOUNDS)
         {
-            index++;        
+            index = 0;
+            shufflePlaylist();
         }
-        else
-        {
-            index = 1;
-        }
-        Serial.print("Playing index: ");
-        Serial.println(index);
+        
+        // play sound based on randomized playlist
+        bb.play(playList[index]);
 
-        // play music here
-        bb.playBusy(index);
+        // print out index and value
+        sprintf(buf, "Index: %d, Val: %d.\n", index, playList[index]); 
+        Serial.print(buf);
+
+        // increment index
+        index++; 
 
         // delay for durationTime milliseconds. should be adjusted to 
         // longest sample that will be played
         delay(durationTime); 
-
         
         // delay for offDelayTime milliseconds. This is the time after durationTime expires but we do not allow another sound
         // to be triggered.
@@ -76,10 +90,37 @@ void loop()
         // clear interrupt flag after sample is played
         bb.clearAuxFlag();
     }
-
+    
     // go to sleep here
     bb.sleep();
 
     // an interrupt occurred. wake up!
     bb.wake();
+}
+
+/************************************************************/
+// Helper function to create a randomized, non-repeeating playlist
+// this should be called once all sounds in playlist have been
+// exhausted
+/************************************************************/
+void shufflePlaylist()
+{
+    uint16_t i, nvalues = MAX_SOUNDS;
+
+    // create sequential playlist with indices that start from 1
+    for(i = 0; i<nvalues; i++)
+    {
+        playList[i] = i+1;
+    }
+
+    // shuffle playlist
+    for(i = 0; i < nvalues-1; i++) 
+    {
+        uint16_t c = random(nvalues-i);
+
+        /* swap */
+        uint16_t t = playList[i]; 
+        playList[i] = playList[i+c]; 
+        playList[i+c] = t;    
+    }
 }

@@ -22,12 +22,19 @@ Boombox::Boombox()
     pinMode(pinAmpShutdn, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
     pinMode(pinMp3Enb, OUTPUT);
+    pinMode(pinCurrEnb, OUTPUT);
+    pinMode(pinRangeEnb, OUTPUT);
+    pinMode(pinPIREnb, OUTPUT);
     pinMode(pinBusy, INPUT);
 
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
+    digitalWrite(pinCurrEnb, HIGH);
+    digitalWrite(pinRangeEnb, HIGH);
+    digitalWrite(pinPIREnb, HIGH);
 
+    attachInterrupt(intPIR, Boombox::irqPIR, RISING);
     attachInterrupt(intAux, Boombox::irqAux, RISING);
     setVol(_vol);
 }
@@ -264,23 +271,27 @@ void Boombox::clearAuxFlag()
 void Boombox::sleep()
 {
     // shut down everything else
-    digitalWrite(pinBoostEnb, LOW);
     digitalWrite(pinMp3Enb, LOW);
+    digitalWrite(pinCurrEnb, LOW);
+    digitalWrite(pinRangeEnb, LOW);
     digitalWrite(pinAmpShutdn, LOW);
+    digitalWrite(pinBoostEnb, LOW);
+    pinMode(pinPIREnb, INPUT_PULLUP);
 
+    LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
 
-    // disable UART
-    UCSR0B = 0x00;
-
-    printf("Sleeping MCU\n");
-    delay(100);
-
-    ADCSRA &= ~(1 << ADEN);    // Disable ADC
-
-    // write sleep mode
-    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-    sleep_enable();                       // setting up for sleep ...
-    sleep_mode();
+//    // disable UART
+//    UCSR0B = 0x00;
+//
+//    printf("Sleeping MCU\n");
+//    delay(100);
+//
+//    ADCSRA &= ~(1 << ADEN);    // Disable ADC
+//
+//    // write sleep mode
+//    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+//    sleep_enable();                       // setting up for sleep ...
+//    sleep_mode();
 }
 
 /************************************************************/
@@ -288,9 +299,16 @@ void Boombox::sleep()
 /************************************************************/
 void Boombox::wake()
 {
+    pinMode(pinPIREnb, OUTPUT);
+    digitalWrite(pinPIREnb, HIGH);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
+    digitalWrite(pinCurrEnb, HIGH);
+    digitalWrite(pinRangeEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
+
+    UCSR0B = 0x98;
+    ADCSRA |= (1 << ADEN);
 
     // need a delay here to start up the mp3 player
     delay(1000);

@@ -3,28 +3,40 @@
 #include "boombox.h"
 #include "chibi.h"
 
-#define MAX_SOUNDS 10
+#define MAX_SOUNDS 5
+#define RANDOMIZING_PIN 5
 
 int index = 0;
+uint16_t playList[MAX_SOUNDS];
+char buf[100];
 
 /************************************************************/
 // setup
 /************************************************************/
 void setup() 
 {   
-  bb.init();
+    uint16_t randSeed;
+    
+    bb.init();
+    pinMode(bb.pinButton, INPUT_PULLUP);
+    
+    cmd.begin(57600);
+    
+    bb.dispBanner();
+    Serial.println("Boombox Standlone Sketch");
+    
+    cmd.add("play", cmdPlay);
+    cmd.add("stop", cmdStop);
+    cmd.add("vol", cmdSetVolume);
+    cmd.add("pause", cmdPause);
+    cmd.add("resume", cmdResume);
+    cmd.add("sleep", cmdSleep);
 
-  cmd.begin(57600);
-
-  bb.dispBanner();
-  Serial.println("Boombox Trailcam Sketch");
-  
-  cmd.add("play", cmdPlay);
-  cmd.add("stop", cmdStop);
-  cmd.add("vol", cmdSetVolume);
-  cmd.add("pause", cmdPause);
-  cmd.add("resume", cmdResume);
-  cmd.add("sleep", cmdSleep); 
+    // shuffle the random number generator so it won't always
+    // give the same random sequence
+    randSeed = analogRead(RANDOMIZING_PIN);
+    randomSeed(randSeed);
+    shufflePlaylist();     
 }
 
 /************************************************************/
@@ -32,38 +44,60 @@ void setup()
 /************************************************************/
 void loop() 
 {
-  cmd.poll();
-/*
-  if (bb.isPIREvent() == true)
-  {
-    bb.clearPIRFlag();
-    
-    // external PIR motion sensor has been triggered    
-    Serial.println("PIR motion sensor event."); 
-  }
-*/
-  if (bb.isAuxEvent() == true)
-  {
-    bb.clearAuxFlag();
-    
-    // button has been pushed 
-    Serial.println("Trigger event.");
+    cmd.poll();
 
-    // play sound. 
-    if (index < MAX_SOUNDS)
-    {        
-      index++;
-      Serial.print("Index: ");
-      Serial.println(index);
-    }
-    else
+    if (bb.isAuxEvent() == true)
     {
-      index = 1;
-      Serial.print("Index: ");
-      Serial.println(index);
+        bb.clearAuxFlag();
+        
+        // button has been pushed 
+        Serial.println("Trigger event.");
+        
+        // if we've reached the end of the playlist, 
+        // shuffle playlist and then restart               
+        if (index == MAX_SOUNDS)
+        {
+            index = 0;
+            shufflePlaylist();
+        }
+        
+        // play sound based on randomized playlist
+        bb.play(playList[index]);
+        
+        // print out index and value   
+        sprintf(buf, "Index: %d, Val: %d.\n", index, playList[index]); 
+        Serial.print(buf);
+        
+        // increment index
+        index++; 
     }
-    bb.play(index);
-  }
+}
+
+/************************************************************/
+// Helper function to create a randomized, non-repeeating playlist
+// this should be called once all sounds in playlist have been
+// exhausted
+/************************************************************/
+void shufflePlaylist()
+{
+    uint16_t i, nvalues = MAX_SOUNDS;
+
+    // create sequential playlist with indices that start from 1
+    for(i = 0; i<nvalues; i++)
+    {
+        playList[i] = i+1;
+    }
+
+    // shuffle playlist
+    for(i = 0; i < nvalues-1; i++) 
+    {
+        uint16_t c = random(nvalues-i);
+
+        /* swap */
+        uint16_t t = playList[i]; 
+        playList[i] = playList[i+c]; 
+        playList[i+c] = t;    
+    }
 }
 
 /************************************************************/
