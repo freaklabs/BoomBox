@@ -7,6 +7,8 @@
 
 int index = 0;
 
+uint32_t delayTime = 0;
+
 /************************************************************/
 // setup
 /************************************************************/
@@ -44,8 +46,6 @@ void loop()
 */
   if (bb.isAuxEvent() == true)
   {
-    bb.clearAuxFlag();
-    
     // button has been pushed 
     Serial.println("Trigger event.");
 
@@ -63,6 +63,9 @@ void loop()
       Serial.println(index);
     }
     bb.play(index);
+
+    delay(delayTime);
+    bb.clearAuxFlag();
   }
 }
 

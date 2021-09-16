@@ -10,6 +10,8 @@ int index = 0;
 uint16_t playList[MAX_SOUNDS];
 char buf[100];
 
+uint32_t delayTime = 0;
+
 /************************************************************/
 // setup
 /************************************************************/
@@ -48,8 +50,6 @@ void loop()
 
     if (bb.isAuxEvent() == true)
     {
-        bb.clearAuxFlag();
-        
         // button has been pushed 
         Serial.println("Trigger event.");
         
@@ -70,6 +70,9 @@ void loop()
         
         // increment index
         index++; 
+
+        delay(delayTime);
+        bb.clearAuxFlag();        
     }
 }
 
