@@ -10,7 +10,7 @@ int index = 0;
 uint16_t playList[MAX_SOUNDS];
 char buf[100];
 
-uint32_t delayTime = 0;
+uint32_t offDelayTime = 0;
 
 /************************************************************/
 // setup
@@ -71,7 +71,7 @@ void loop()
         // increment index
         index++; 
 
-        delay(delayTime);
+        delay(offDelayTime);
         bb.clearAuxFlag();
     }
 }

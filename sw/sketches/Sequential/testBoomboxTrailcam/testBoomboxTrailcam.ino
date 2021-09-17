@@ -7,7 +7,7 @@
 
 int index = 0;
 
-uint32_t delayTime = 0;
+uint32_t offDelayTime = 0;
 
 /************************************************************/
 // setup
@@ -64,7 +64,7 @@ void loop()
     }
     bb.play(index);
 
-    delay(delayTime);
+    delay(offDelayTime);
     bb.clearAuxFlag();
   }
 }
