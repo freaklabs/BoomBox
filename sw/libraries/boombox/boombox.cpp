@@ -5,6 +5,7 @@ Boombox bb;
 
 volatile bool pirFlag;
 volatile bool auxFlag;
+uint32_t startTime;
 
 /*----------------------------------------------------------*/
 // Initializing the MP3 player
@@ -123,6 +124,22 @@ void Boombox::delaySet(uint32_t delayVal)
 uint32_t Boombox::delayGet()
 {
     return _delayVal;
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::ampEnable()
+{
+    digitalWrite(pinAmpShutdn, HIGH);    
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::ampDisable()
+{
+    digitalWrite(pinAmpShutdn, LOW);    
 }
 
 /************************************************************/
@@ -274,7 +291,6 @@ void Boombox::sleep()
     digitalWrite(pinMp3Enb, LOW);
     digitalWrite(pinCurrEnb, LOW);
     digitalWrite(pinRangeEnb, LOW);
-    digitalWrite(pinAmpShutdn, LOW);
     digitalWrite(pinBoostEnb, LOW);
     pinMode(pinPIREnb, INPUT_PULLUP);
 
@@ -305,7 +321,6 @@ void Boombox::wake()
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinCurrEnb, HIGH);
     digitalWrite(pinRangeEnb, HIGH);
-    digitalWrite(pinAmpShutdn, HIGH);
 
     UCSR0B = 0x98;
     ADCSRA |= (1 << ADEN);

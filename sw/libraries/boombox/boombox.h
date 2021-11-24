@@ -35,6 +35,8 @@ public:
     void delayMS();
     void delaySet(uint32_t delayVal);
     uint32_t delayGet();
+    void ampEnable();
+    void ampDisable();
 
     void playNext();
     void playPrev();

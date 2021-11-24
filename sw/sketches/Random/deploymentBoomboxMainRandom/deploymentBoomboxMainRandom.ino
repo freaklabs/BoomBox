@@ -6,11 +6,12 @@ Uses trailcam to trigger sound effects
 #include "chibi.h"
 
 // customize MAX_SOUNDS based on number of samples in MP3 lib
-#define MAX_SOUNDS 5   
+#define MAX_SOUNDS 9   
 #define RANDOMIZING_PIN 5
+#define ONE_SECOND 1000
 
 // delay for delayTime milliseconds after trigger occurs
-uint32_t delayTime = 0;        
+uint32_t delayTime = 5000;        
 
 // play sound and then wait for durationTime milliseconds
 uint32_t durationTime = 10000;   
@@ -33,17 +34,18 @@ void setup()
         
     // initialize system
     bb.init();
+    bb.ampDisable();
     
     // display setup banner
+    // delay a bit before sleeping so it can print out banner    
     bb.dispBanner();
+    delay(ONE_SECOND);
 
     // shuffle the random number generator so it won't always
     // give the same random sequence
     randSeed = analogRead(RANDOMIZING_PIN);
     randomSeed(randSeed);
     shufflePlaylist();
-
-    delay(500);
 }
 
 /************************************************************/
@@ -69,12 +71,16 @@ void loop()
             shufflePlaylist();
         }
         
-        // play sound based on randomized playlist
-        bb.play(playList[index]);
-
         // print out index and value
         sprintf(buf, "Index: %d, Val: %d.\n", index, playList[index]); 
         Serial.print(buf);
+
+        // enable amp
+        bb.ampEnable();
+        delay(ONE_SECOND); 
+
+        // play sound based on randomized playlist
+        bb.play(playList[index]);
 
         // increment index
         index++; 
@@ -83,9 +89,12 @@ void loop()
         // longest sample that will be played
         delay(durationTime); 
         
+        // disable amp before going to sleep
+        bb.ampDisable(); 
+        
         // delay for offDelayTime milliseconds. This is the time after durationTime expires but we do not allow another sound
         // to be triggered.
-        delay(offDelayTime);
+        delay(offDelayTime);        
 
         // clear interrupt flag after sample is played
         bb.clearAuxFlag();
