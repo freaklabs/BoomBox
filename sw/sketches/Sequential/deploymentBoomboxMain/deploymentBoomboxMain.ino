@@ -7,7 +7,7 @@ Uses trailcam to trigger sound effects
 
 // customize MAX_SOUNDS based on number of samples in MP3 lib
 #define MAX_SOUNDS 9   
-#define ONE_SECOND 1000
+#define AMP_ENABLE_DELAY 500
 
 // delay for delayTime milliseconds after trigger occurs
 uint32_t delayTime = 5000;        
@@ -34,7 +34,7 @@ void setup()
     // display setup banner
     // delay a bit before sleeping so it can print out banner
     bb.dispBanner();
-    delay(ONE_SECOND);
+    delay(100);
 }
 
 /************************************************************/
@@ -65,7 +65,7 @@ void loop()
 
         // enable amp
         bb.ampEnable();
-        delay(ONE_SECOND);
+        delay(AMP_ENABLE_DELAY);
 
         // play music here
         bb.play(index);

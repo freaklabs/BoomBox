@@ -274,7 +274,7 @@ bool Boombox::isAuxEvent()
 void Boombox::clearAuxFlag()
 {
     // add delay to debounce events
-    delay(1000);
+    delay(100);
     auxFlag = false;
 }
 
