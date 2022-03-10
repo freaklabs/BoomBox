@@ -1,7 +1,5 @@
 #include <cmdArduino.h>
-#include <LowPower.h>
 #include "boombox.h"
-#include "chibi.h"
 
 #define MAX_SOUNDS 5
 #define RANDOMIZING_PIN 5
@@ -109,12 +107,12 @@ void shufflePlaylist()
 /************************************************************/
 void cmdPlay(int arg_cnt, char **args)
 {
-  uint8_t track = cmd.conv(args[1]);
-  if (track > MAX_SOUNDS)
-  {
-    track = MAX_SOUNDS-1;
-  }
-  bb.play(track);
+    uint8_t track = cmd.conv(args[1]);
+    if (track > MAX_SOUNDS)
+    {
+        track = MAX_SOUNDS-1;
+    }
+    bb.play(track);
 }
 
 /************************************************************/
@@ -124,12 +122,12 @@ void cmdPlay(int arg_cnt, char **args)
 /************************************************************/
 void cmdSetVolume(int arg_cnt, char **args)
 {
-  uint8_t vol = cmd.conv(args[1]);
-  if (vol > 30)
-  {
-    vol = 30;
-  }
-  bb.setVol(vol);
+    uint8_t vol = cmd.conv(args[1]);
+    if (vol > 30)
+    {
+        vol = 30;
+    }
+    bb.setVol(vol);
 }
 
 /************************************************************/
@@ -137,7 +135,7 @@ void cmdSetVolume(int arg_cnt, char **args)
 /************************************************************/
 void cmdPause(int arg_cnt, char **args)
 {
-  bb.pause();
+    bb.pause();
 }
 
 /************************************************************/
@@ -145,7 +143,7 @@ void cmdPause(int arg_cnt, char **args)
 /************************************************************/
 void cmdResume(int arg_cnt, char **args)
 {
-  bb.resume();
+    bb.resume();
 }
 
 /************************************************************/
@@ -153,7 +151,7 @@ void cmdResume(int arg_cnt, char **args)
 /************************************************************/
 void cmdStop(int arg_cnt, char **args)
 {
-  bb.stop();
+    bb.stop();
 }
 
 /************************************************************/
@@ -161,11 +159,12 @@ void cmdStop(int arg_cnt, char **args)
 /************************************************************/
 void cmdSleep(int arg_cnt, char **args)
 {
-  bb.sleep();
-  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
-
-  // need to wake up if you sleep. 
-  // can only wake up from external interrupt, 
-  // ie: button push or motion event
-  bb.wake();
+    bb.ampDisable();    
+    bb.sleep();
+    
+    // need to wake up if you sleep. 
+    // can only wake up from external interrupt, 
+    // ie: button push or motion event
+    bb.wake();
+    bb.ampEnable();
 }

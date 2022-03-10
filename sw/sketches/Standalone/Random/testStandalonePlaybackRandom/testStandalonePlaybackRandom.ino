@@ -7,6 +7,7 @@
 
 #define TESTONLY 1
 #define MAX_SOUNDS 5
+#define MAX_SOUND_DURATION 10000
 
 #if (TESTONLY == 1)
     #define TICKSPERMINUTE 0
@@ -39,8 +40,9 @@ static FILE uartout = {0,0,0,0,0,0,0,0};
 // boombox specific variables
 int index = 0;
 uint32_t delayTime = 0;      
-uint32_t durationTime = 10000;   
+uint32_t durationTime = MAX_SOUND_DURATION;   
 uint32_t offDelayTime = 0;
+uint16_t randNum;
 
 // interval counter
 volatile bool flagWdt = false;
@@ -63,12 +65,12 @@ void setup()
     fdev_setup_stream (&uartout, uart_putchar, NULL, _FDEV_SETUP_WRITE);
     stdout = &uartout ;
 
-    configWdt();    
+    configWdt();
 
     // clear and retrieve meta data structure
     memset(&meta, 0, sizeof(boomboxMeta_t));
     getMeta();
-    
+
     cmd.begin(57600);
     bb.init();
     
@@ -79,6 +81,11 @@ void setup()
 
     cmdTableInit();
 
+    // seed random number generator
+    randomSeed(analogRead(0));
+    randNum = random(1, meta.playbackInterval);
+    DBG_PRINTF("Next play after %d minute\\s.\n", randNum);
+    
     // select development mode
     selectMode();    
 }
@@ -87,7 +94,7 @@ void setup()
 // Loop
 /**************************************************************************/
 void loop() 
-{  
+{
     if (flagWdt)
     {
         wdt_reset();
@@ -98,19 +105,24 @@ void loop()
         {
             minuteCtr = 0;
             intervalMinutes++;     
-            
+            DBG_PRINTLN(F("ONE MINUTE"));
+              
             // check if we're in normal mode. If so, operate as if we're in deployment
             if (normalMode)
-            {           
-                DBG_PRINTLN(F("ONE MINUTE"));   
-                
+            {
+                // play a sound randomly within our playback interval
+                if (intervalMinutes == randNum)
+                {
+                    // play a sound now
+                    playSound();                          
+                }
+                                
                 // if we've hit our playback interval, reset the interval and play a sound
                 if (intervalMinutes >= meta.playbackInterval)
                 {
                     intervalMinutes = 0;
-                    
-                    // play a sound now
-                    playSound();
+                    randNum = random(1, meta.playbackInterval);
+                    DBG_PRINTF("\nOne period finished. Next play after %d minute\\s.\n", randNum);
                 }     
             }
         }
@@ -119,7 +131,7 @@ void loop()
             // increment minute counter
             minuteCtr++; 
         } 
-    }
+    }   
 
     if (normalMode)
     {
@@ -138,8 +150,8 @@ void loop()
         if (elapsedTime(cmdModeTimeCnt) > cmdModeTimeLimit)
         {
             selectMode();
-        }     
-    }    
+        }          
+    }
 }
 
 /**************************************************************************/
@@ -154,7 +166,7 @@ ISR(WDT_vect)
 // sysSleep
 /**************************************************************************/
 void sysSleep()
-{
+{   
     bb.ampDisable();
     bb.sleep(); // sleep here
 }

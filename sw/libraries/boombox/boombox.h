@@ -1,10 +1,10 @@
 #pragma once
 #include "Arduino.h"
-#include "SoftwareSerial.h"
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
 #include <LowPower.h>
+#include <SoftwareSerial.h>
 
 class Boombox
 {
@@ -18,6 +18,7 @@ public:
     uint8_t pinCurrEnb = 7;
     uint8_t pinRangeEnb = 16;
     uint8_t pinPIREnb = 17;
+    uint8_t pin5vEnb = 15;
     uint8_t _vol = 26;
     uint32_t _delayVal = 0;
 
@@ -26,29 +27,21 @@ public:
 
 public:
     Boombox();
-    void init();
 
-    void watchdogEnb();
-    void watchdogDis();
-    void watchdogKick();
+    void init();    
+    void dispBanner();
 
-    void delayMS();
-    void delaySet(uint32_t delayVal);
-    uint32_t delayGet();
-    void ampEnable();
-    void ampDisable();
 
     void playNext();
     void playPrev();
     void play(uint8_t file);
     void playBusy(uint8_t file);
-    void setVol(uint8_t vol);
     void stop();
     void pause();
     void resume();
+    void setVol(uint8_t vol);
 
     void buttonInit();
-    void dispBanner();
 
     bool isBusy();
     bool isPIREvent();
@@ -61,10 +54,16 @@ public:
     void clearAuxFlag();
 
     static void irqPIR();
-    static void irqAux();
+    static void irqAux();   
+
+    void ampEnable();
+    void ampDisable();
+    void reg5vEnable();
+    void reg5vDisable();
 
 private:
     void _sendCmd(uint8_t *, uint8_t);
+
 };
 
 extern Boombox bb;

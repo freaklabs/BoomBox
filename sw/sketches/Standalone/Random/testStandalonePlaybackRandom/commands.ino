@@ -1,6 +1,6 @@
-//**************************************************************************/
+/**************************************************************************/
 // commands
-//**************************************************************************
+/**************************************************************************/
 void cmdTableInit()
 {
     cmd.add("setid", cmdSetId);
@@ -76,7 +76,7 @@ void cmdNormal(int argc, char **args)
 void cmdPlay(int argc, char **args)
 {
     (void) argc;
-    
+        
     uint8_t track = cmd.conv(args[1]);
     if (track > MAX_SOUNDS)
     {
@@ -92,8 +92,8 @@ void cmdPlay(int argc, char **args)
 /************************************************************/
 void cmdSetVolume(int argc, char **args)
 {
-    (void) argc;    
-    
+    (void) argc;
+ 
     uint8_t vol = cmd.conv(args[1]);
     if (vol > 30)
     {
@@ -119,7 +119,7 @@ void cmdPause(int argc, char **args)
 void cmdResume(int argc, char **args)
 {
     (void) argc;
-    (void) args;
+    (void) args;    
     
     bb.resume();
 }
@@ -130,8 +130,8 @@ void cmdResume(int argc, char **args)
 void cmdStop(int argc, char **args)
 {
     (void) argc;
-    (void) args;
-    
+    (void) args;       
+  
     bb.stop();
 }
 
@@ -139,10 +139,10 @@ void cmdStop(int argc, char **args)
 // Go into hibernation mode
 /************************************************************/
 void cmdSleep(int argc, char **args)
-{  
+{
     (void) argc;
-    (void) args;
-    
+    (void) args;   
+        
     bb.sleep();
     //LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
     

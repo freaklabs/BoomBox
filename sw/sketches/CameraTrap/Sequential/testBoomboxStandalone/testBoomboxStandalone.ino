@@ -1,8 +1,5 @@
 #include <cmdArduino.h>
-#include <chibi.h>
-#include <LowPower.h>
 #include "boombox.h"
-#include "chibi.h"
 
 #define MAX_SOUNDS 8
 
@@ -129,11 +126,12 @@ void cmdStop(int arg_cnt, char **args)
 /************************************************************/
 void cmdSleep(int arg_cnt, char **args)
 {
+  bb.ampDisable();
   bb.sleep();
-  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
 
   // need to wake up if you sleep. 
   // can only wake up from external interrupt, 
   // ie: button push or motion event
   bb.wake();
+  bb.ampEnable();
 }

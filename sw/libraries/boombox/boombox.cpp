@@ -17,29 +17,20 @@ uint32_t startTime;
 Boombox::Boombox()
 {
     pinMode(pinBusy, INPUT);
-    pinMode(pinPIR, INPUT);
     pinMode(pinButton, INPUT);
 
     pinMode(pinAmpShutdn, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
     pinMode(pinMp3Enb, OUTPUT);
-    pinMode(pinCurrEnb, OUTPUT);
-    pinMode(pinRangeEnb, OUTPUT);
-    pinMode(pinPIREnb, OUTPUT);
-    pinMode(pinBusy, INPUT);
+    pinMode(pin5vEnb, OUTPUT);
 
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
-    digitalWrite(pinCurrEnb, HIGH);
-    digitalWrite(pinRangeEnb, HIGH);
-    digitalWrite(pinPIREnb, HIGH);
+    digitalWrite(pin5vEnb, LOW);
 
-    attachInterrupt(intPIR, Boombox::irqPIR, RISING);
     attachInterrupt(intAux, Boombox::irqAux, RISING);
-    setVol(_vol);
 }
-
 /************************************************************/
 // init
 /************************************************************/
@@ -49,37 +40,12 @@ void Boombox::init()
     pirFlag = false;
 
     ss.begin(9600);
-    Serial.begin(57600);
+    setVol(_vol);
 }
 
 /*----------------------------------------------------------*/
 // Methods for controlling the MP3 player
 /*----------------------------------------------------------*/
-/************************************************************/
-// enable watchdog timer
-/************************************************************/
-void Boombox::watchdogEnb()
-{
-    // enable watchdog timer
-    wdt_enable(WDTO_8S);
-}
-
-/************************************************************/
-// disable watchdog timer
-/************************************************************/
-void Boombox::watchdogDis()
-{
-    // disable watchdog here
-    wdt_disable();
-}
-
-/************************************************************/
-// reset the watchdog timer
-/************************************************************/
-void Boombox::watchdogKick()
-{
-    wdt_reset();
-}
 
 /************************************************************/
 // initialize the pushbutton
@@ -100,46 +66,6 @@ void Boombox::dispBanner()
     Serial.print("Last modified: ");
     Serial.println(__DATE__);
     Serial.println("-------------------------------------------");
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::delayMS()
-{
-    delay(_delayVal);
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::delaySet(uint32_t delayVal)
-{
-    _delayVal = delayVal;
-}
-
-/************************************************************/
-//
-/************************************************************/
-uint32_t Boombox::delayGet()
-{
-    return _delayVal;
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::ampEnable()
-{
-    digitalWrite(pinAmpShutdn, HIGH);    
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::ampDisable()
-{
-    digitalWrite(pinAmpShutdn, LOW);    
 }
 
 /************************************************************/
@@ -289,25 +215,9 @@ void Boombox::sleep()
 {
     // shut down everything else
     digitalWrite(pinMp3Enb, LOW);
-    digitalWrite(pinCurrEnb, LOW);
-    digitalWrite(pinRangeEnb, LOW);
     digitalWrite(pinBoostEnb, LOW);
-    pinMode(pinPIREnb, INPUT_PULLUP);
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
-
-//    // disable UART
-//    UCSR0B = 0x00;
-//
-//    printf("Sleeping MCU\n");
-//    delay(100);
-//
-//    ADCSRA &= ~(1 << ADEN);    // Disable ADC
-//
-//    // write sleep mode
-//    set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-//    sleep_enable();                       // setting up for sleep ...
-//    sleep_mode();
 }
 
 /************************************************************/
@@ -315,18 +225,43 @@ void Boombox::sleep()
 /************************************************************/
 void Boombox::wake()
 {
-    pinMode(pinPIREnb, OUTPUT);
-    digitalWrite(pinPIREnb, HIGH);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
-    digitalWrite(pinCurrEnb, HIGH);
-    digitalWrite(pinRangeEnb, HIGH);
-
-    UCSR0B = 0x98;
-    ADCSRA |= (1 << ADEN);
 
     // need a delay here to start up the mp3 player
-    delay(1000);
+    delay(100);
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::ampEnable()
+{
+    digitalWrite(pinAmpShutdn, HIGH);    
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::ampDisable()
+{
+    digitalWrite(pinAmpShutdn, LOW);    
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::reg5vEnable()
+{
+    digitalWrite(pin5vEnb, HIGH);    
+}
+
+/************************************************************/
+//
+/************************************************************/
+void Boombox::reg5vDisable()
+{
+    digitalWrite(pin5vEnb, LOW);    
 }
 
 /*----------------------------------------------------------*/

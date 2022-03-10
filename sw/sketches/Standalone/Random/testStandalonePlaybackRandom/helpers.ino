@@ -5,7 +5,7 @@ void selectMode()
 {   
     uint32_t now = millis();;
      
-    Serial.println(F("Press 'c' to go into command mode"));
+    Serial.println("Press 'c' to go into command mode");
     while ((millis() - now) < START_WAIT_TIME)
     {
       if (Serial.available() > 0)
@@ -22,7 +22,7 @@ void selectMode()
     }
     normalMode = true;
     intervalMinutes = 0;
-    Serial.println(F("Going into normal operation mode."));
+    Serial.println("Going into normal operation mode.");
     Serial.flush();
 }
 
@@ -38,7 +38,7 @@ void playSound()
     // delay for delayTime milliseconds after trigger has happened. 
     // This delays playing the sound immediately after trigger 
     delay(delayTime);
-    
+        
     if (index < MAX_SOUNDS)
     {
         index++;        
@@ -66,10 +66,10 @@ void playSound()
     
     // delay for offDelayTime milliseconds. This is the time after durationTime expires but we do not allow another sound
     // to be triggered.
-    delay(offDelayTime);  
+    delay(offDelayTime);      
 
     // restart the watchdog timer
-    configWdt();
+    configWdt();        
 }
 
 /**************************************************************************/
@@ -113,13 +113,13 @@ void configWdt()
     /* Start the WDT Config change sequence. */
     WDTCSR |= _BV(WDCE) | _BV(WDE);
     /* Configure the prescaler and the WDT for interrupt mode only*/
-
+    
 #if (TESTONLY == 1)    
     WDTCSR =  _BV(WDP1) | _BV(WDP2) | _BV(WDIE); // 1 seconds
 #else
     WDTCSR =  _BV(WDP3) | _BV(WDIE); // 4 seconds
 #endif
-        
+
     sei();
 }
 
