@@ -167,4 +167,5 @@ void cmdSleep(int arg_cnt, char **args)
     // ie: button push or motion event
     bb.wake();
     bb.ampEnable();
+    delay(500);
 }

@@ -1,7 +1,7 @@
 #include <cmdArduino.h>
 #include "boombox.h"
 
-#define MAX_SOUNDS 8
+#define MAX_SOUNDS 5
 
 int index = 0;
 
@@ -134,4 +134,5 @@ void cmdSleep(int arg_cnt, char **args)
   // ie: button push or motion event
   bb.wake();
   bb.ampEnable();
+  delay(500);
 }
