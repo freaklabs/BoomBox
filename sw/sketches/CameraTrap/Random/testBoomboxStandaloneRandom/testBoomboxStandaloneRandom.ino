@@ -1,10 +1,11 @@
 #include <cmdArduino.h>
 #include "boombox.h"
 
-#define MAX_SOUNDS 5
+#define MAX_SOUNDS 3
 #define RANDOMIZING_PIN 5
 
 int index = 0;
+int intAux = 1;
 uint16_t playList[MAX_SOUNDS];
 char buf[100];
 
@@ -18,7 +19,9 @@ void setup()
     uint16_t randSeed;
     
     bb.init();
+    detachInterrupt(intAux);
     pinMode(bb.pinButton, INPUT_PULLUP);
+    attachInterrupt(intAux,bb.irqAux, FALLING);
     
     cmd.begin(57600);
     

@@ -1,11 +1,12 @@
 #include <cmdArduino.h>
 #include "boombox.h"
 
-#define MAX_SOUNDS 5
+#define MAX_SOUNDS 3
 
 int index = 0;
-
+int intAux = 1;
 uint32_t offDelayTime = 0;
+
 
 /************************************************************/
 // setup
@@ -13,7 +14,9 @@ uint32_t offDelayTime = 0;
 void setup() 
 {   
   bb.init();
+  detachInterrupt(intAux);
   pinMode(bb.pinButton, INPUT_PULLUP);
+  attachInterrupt(intAux,bb.irqAux, FALLING);
 
   cmd.begin(57600);
 
