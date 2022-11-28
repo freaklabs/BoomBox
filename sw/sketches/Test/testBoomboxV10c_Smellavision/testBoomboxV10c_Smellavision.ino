@@ -1,16 +1,13 @@
 #include <cmdArduino.h>
-#include <boombox.h>
+#include <boomboxTest.h>
 
-#define MAX_SOUNDS 5
-
-SoftwareSerial ss(9, 8);
-Rtc_Pcf8563 rtc;
+#define MAX_SOUNDS 10
 
 int index = 0;
-int pinAuxLed = 13;
 
 uint32_t offDelayTime = 0;
 volatile bool flagTimer = 0;
+uint8_t pinLedEnb = 17;
 
 // basic configuration
 static FILE uartout = {0,0,0,0,0,0,0,0};
@@ -24,17 +21,16 @@ void setup()
     fdev_setup_stream (&uartout, uart_putchar, NULL, _FDEV_SETUP_WRITE);
     stdout = &uartout ;
             
-    bb.begin(&ss, &rtc);
-    bb.buttonInit();
-    pinMode(pinAuxLed, OUTPUT);
-
-    detachInterrupt(bb.intNumAux);
-    attachInterrupt(bb.intNumAux, bb.irqAux, FALLING);
+    bb.begin();
+    pinMode(bb.pinButton, INPUT_PULLUP);
     
-    cmd.begin(57600, &Serial);
+    pinMode(pinLedEnb, OUTPUT);
+    digitalWrite(pinLedEnb, LOW);
+    
+    cmd.begin(57600);
     
     bb.dispBanner();
-    Serial.println("Boombox Standlone Sketch");  
+    Serial.println("Boombox Smellavision Sketch");   
     
     cmd.add("play", cmdPlay);
     cmd.add("stop", cmdStop);
@@ -45,7 +41,6 @@ void setup()
     cmd.add("settime", cmdSetDateTime);
     cmd.add("gettime", cmdGetDateTime);    
     cmd.add("enbtimer", cmdEnableTimer);
-    cmd.add("setinterval", cmdSetInterval);
 }
 
 /************************************************************/
@@ -87,12 +82,12 @@ void loop()
     playStatus = digitalRead(bb.pinBusy);
     while(!playStatus)
     {
-        digitalWrite(pinAuxLed, HIGH);
+        digitalWrite(pinLedEnb, HIGH);
         playStatus = digitalRead(bb.pinBusy);           
     }
-    digitalWrite(pinAuxLed, LOW);
+    digitalWrite(pinLedEnb, LOW);
     
-    delay(offDelayTime);
+//    delay(offDelayTime);
     bb.clearAuxFlag();
   }  
 }
@@ -233,7 +228,6 @@ void cmdStop(int arg_cnt, char **args)
     
     bb.stop();
 }
-
 
 /************************************************************/
 // Go into hibernation mode
