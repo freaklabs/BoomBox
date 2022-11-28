@@ -5,7 +5,7 @@
 
 int index = 0;
 
-uint32_t offDelayTime = 0;
+uint32_t offDelayTime = 10000;
 
 /************************************************************/
 // setup

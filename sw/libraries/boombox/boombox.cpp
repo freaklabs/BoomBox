@@ -214,8 +214,10 @@ void Boombox::clearAuxFlag()
 void Boombox::sleep()
 {
     // shut down everything else
+
     digitalWrite(pinMp3Enb, LOW);
     digitalWrite(pinBoostEnb, LOW);
+    digitalWrite(pin5vEnb, LOW);
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
 }
@@ -225,6 +227,7 @@ void Boombox::sleep()
 /************************************************************/
 void Boombox::wake()
 {
+    digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
 
