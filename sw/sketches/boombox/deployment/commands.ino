@@ -169,10 +169,12 @@ void cmdSetShuffle(int argCnt, char **args)
 
   if (meta.shuffleEnable == 0)
   {
+    boombox.shuffleEnable(0);
     boombox.initPlaylist();
   }
   else
   {
+    boombox.shuffleEnable(1);
     boombox.shufflePlaylist();
   }
 }
