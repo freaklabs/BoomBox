@@ -17,7 +17,7 @@ void cmdTableInit()
   cmd.add("setinterval", cmdSetInterval);
   cmd.add("setdelay", cmdSetDelay);
   cmd.add("setoffdelay", cmdSetOffDelay);
-  cmd.add("dump", cmdDumpMeta);
+  cmd.add("config", cmdDumpConfig);
   cmd.add("dumplist", cmdDumpPlaylist);
   cmd.add("normal", cmdSetNormal);
 }
@@ -197,7 +197,7 @@ void cmdSetInterval(int argCnt, char **args)
 /**************************************************************************/
 // cmdSetSite
 /**************************************************************************/
-void cmdDumpMeta(int argCnt, char **args)
+void cmdDumpConfig(int argCnt, char **args)
 {
     (void) argCnt;
     (void) args;
