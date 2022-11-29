@@ -149,7 +149,7 @@ void cmdSetMaxSounds(int argCnt, char **args)
   EEPROM.get(EEPROM_META_LOC, meta);
   meta.maxSounds = maxSounds;
   EEPROM.put(EEPROM_META_LOC, meta);
-  setMaxSounds(meta.maxSounds);
+  boombox.setMaxSounds(meta.maxSounds);
 }
 
 /************************************************************/
