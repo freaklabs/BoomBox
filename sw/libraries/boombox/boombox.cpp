@@ -1,216 +1,96 @@
 #include "boombox.h"
-SoftwareSerial ss(9, 8);
 
 Boombox bb;
 
-volatile bool pirFlag;
-volatile bool auxFlag;
-uint32_t startTime;
-
-/*----------------------------------------------------------*/
-// Initializing the MP3 player
-/*----------------------------------------------------------*/
+static volatile bool pirFlag;
+static volatile bool rtcFlag;
+static volatile bool auxFlag;
 
 /************************************************************/
 // Constructor
 /************************************************************/
 Boombox::Boombox()
 {
-    pinMode(pinBusy, INPUT);
+	pinPIR         	= 16;
+    pinButton      	= 3;
+    pinBusy        	= 11;
+    
+    pinAmpShutdn   	= 5;
+    pinBoostEnb    	= 7;
+    pinMp3Enb      	= 6;
+    pin5vEnb       	= 15;
+    pinAuxLed       = 13;
+    pinAuxEnb 		= 17;
+ 	pinAuxData0 	= 4;
+    pinAuxData1 	= 10;     
+
+    _vol           	= 26;
+    _delayVal      	= 0;
+
+    intNumRtc 		= 0;
+    intNumAux 		= 1;    
+
+    pinMode(pinPIR, INPUT);
     pinMode(pinButton, INPUT);
+    pinMode(pinBusy, INPUT);
 
     pinMode(pinAmpShutdn, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
     pinMode(pinMp3Enb, OUTPUT);
     pinMode(pin5vEnb, OUTPUT);
+    pinMode(pinAuxEnb, OUTPUT);
+    pinMode(pinAuxData0, OUTPUT);
+    pinMode(pinAuxData1, OUTPUT);
+    pinMode(pinAuxLed, OUTPUT);
 
-    digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinAmpShutdn, HIGH);
+    digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pin5vEnb, LOW);
+    digitalWrite(pinAuxEnb, LOW);
+    digitalWrite(pinAuxData0, LOW);
+    digitalWrite(pinAuxData1, LOW);
+    digitalWrite(pinAuxLed, LOW);
 
-    attachInterrupt(intAux, Boombox::irqAux, RISING);
+    attachInterrupt(intNumRtc, Boombox::irqRtc, FALLING);
+    attachInterrupt(intNumAux, Boombox::irqAux, RISING);
 }
+
 /************************************************************/
-// init
+// begin
 /************************************************************/
-void Boombox::init()
+void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
 {
     auxFlag = false;
-    pirFlag = false;
+    rtcFlag = false;
 
-    ss.begin(9600);
+    ss = sser;
+    ss->begin(9600);
     setVol(_vol);
+
+    _rtc = rtc;
+    _rtc->clearTimer(); 
 }
 
 /*----------------------------------------------------------*/
 // Methods for controlling the MP3 player
 /*----------------------------------------------------------*/
 
-/************************************************************/
 // initialize the pushbutton
-/************************************************************/
-void Boombox::buttonInit()
-{
-    pinMode(pinButton, INPUT_PULLUP);
-}
 
-/************************************************************/
-//
-/************************************************************/
+/*----------------------------------------------------------*/
 void Boombox::dispBanner()
 {
-    Serial.println("-------------------------------------------");
-    Serial.println("Boombox");
-    Serial.println("Designed by FreakLabs and Meredith Palmer");
-    Serial.print("Last modified: ");
-    Serial.println(__DATE__);
-    Serial.println("-------------------------------------------");
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::play(uint8_t file)
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0X00, 0x00, file , 0xEF };
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::playBusy(uint8_t file)
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0X00, 0x00, file , 0xEF };
-    _sendCmd(buf, sizeof(buf));
-    while (isBusy())
-    {
-
-    }
-    delay(250);
-}
-
-/************************************************************/
-//
-/************************************************************/
-bool Boombox::isBusy()
-{
-    return digitalRead(pinBusy) == LOW;
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::setVol(uint8_t vol)
-{
-    _vol = constrain(vol, 0, 30);
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::playNext()
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x01, 0x00, 0x00, 0x00, 0xEF };
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::playPrev()
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x01, 0x00, 0x00, 0x00, 0xEF };
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::stop()
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x16, 0x00, 0x00, 0x00, 0XEF };
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::pause()
-{
-    uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0E, 0x00, 0x00, 0x00, 0xEF};
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::resume()
-{
-    uint8_t buf[8] = {0x7E, 0xFF, 0x06, 0x0D, 0x00, 0x00, 0x00, 0xEF};
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::irqPIR(void)
-{
-    pirFlag = true;
-}
-
-/************************************************************/
-//
-/************************************************************/
-bool Boombox::isPIREvent()
-{
-    return pirFlag;
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::clearPIRFlag()
-{
-    // add delay to debounce events
-    delay(200);
-    pirFlag = 0;
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::irqAux(void)
-{
-   auxFlag = true;
-}
-
-/************************************************************/
-//
-/************************************************************/
-bool Boombox::isAuxEvent()
-{
-    return auxFlag;
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::clearAuxFlag()
-{
-    // add delay to debounce events
-    delay(100);
-    auxFlag = false;
+    Serial.println(F("-------------------------------------------"));
+    Serial.print(F("Boombox "));
+    Serial.println(F(BOARD_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
+    Serial.print(F("Last modified: "));
+    Serial.println(F(__DATE__));
+    Serial.println(F("-------------------------------------------"));
 }
 
 /*----------------------------------------------------------*/
-// Power management
-/*----------------------------------------------------------*/
-
-/************************************************************/
-//
-/************************************************************/
 void Boombox::sleep()
 {
     // shut down everything else
@@ -218,68 +98,130 @@ void Boombox::sleep()
     digitalWrite(pinMp3Enb, LOW);
     digitalWrite(pinBoostEnb, LOW);
     digitalWrite(pin5vEnb, LOW);
+    digitalWrite(pinAuxEnb, LOW);
+    wdt_disable();
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
 }
 
-/************************************************************/
-//
-/************************************************************/
+/*----------------------------------------------------------*/
 void Boombox::wake()
 {
+    wdt_enable(WDTO_8S);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
+    digitalWrite(pinAuxEnb, HIGH);
 
     // need a delay here to start up the mp3 player
     delay(100);
 }
 
-/************************************************************/
-//
-/************************************************************/
-void Boombox::ampEnable()
+/*----------------------------------------------------------*/
+void Boombox::rtcSetTime(int yr, int mon, int day, int hour, int min, int sec)
 {
-    digitalWrite(pinAmpShutdn, HIGH);    
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::ampDisable()
-{
-    digitalWrite(pinAmpShutdn, LOW);    
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::reg5vEnable()
-{
-    digitalWrite(pin5vEnb, HIGH);    
-}
-
-/************************************************************/
-//
-/************************************************************/
-void Boombox::reg5vDisable()
-{
-    digitalWrite(pin5vEnb, LOW);    
+    _rtc->initClock();
+    _rtc->setDateTime(day, 0, mon, 0, yr, hour, min, sec);       
 }
 
 /*----------------------------------------------------------*/
-// Helper functions
-/*----------------------------------------------------------*/
-
-/************************************************************/
-// sendCmd
-/************************************************************/
-void Boombox::_sendCmd(uint8_t *buf, uint8_t len)
+ts_t Boombox::rtcGetTime()
 {
-    cli();
-    for (int i=0; i<len; i++)
+    ts_t time;
+    memset(&time, 0, sizeof(time));
+
+    _rtc->getDateTime();
+    time.year = 2000 + _rtc->getYear();
+    time.mon = _rtc->getMonth();
+    time.mday = _rtc->getDay();
+    time.hour = _rtc->getHour();
+    time.min = _rtc->getMinute();
+    time.sec = _rtc->getSecond();
+    return time;    
+}
+
+/*----------------------------------------------------------*/
+char *Boombox::rtcPrintTime()
+{
+  ts_t time = rtcGetTime();
+  memset(bufTime, 0, sizeof(bufTime));
+  sprintf(bufTime, "%02d:%02d:%02d", time.hour, time.min, time.sec);
+  return bufTime;
+}
+
+/*----------------------------------------------------------*/
+char *Boombox::rtcPrintDate()
+{
+  ts_t time = rtcGetTime();
+  memset(bufTime, 0, sizeof(bufTime));
+  sprintf(bufTime, "%04d/%02d/%02d", time.year, time.mon, time.mday);
+  return bufTime;
+}
+
+/*----------------------------------------------------------*/
+char *Boombox::rtcPrintTimeAndDate()
+{
+    ts_t time = rtcGetTime();
+    memset(bufTime, 0, sizeof(bufTime));
+    sprintf(bufTime, "%04d/%02d/%02d %02d:%02d:%02d", time.year, time.mon, time.mday, time.hour, time.min, time.sec);
+    return bufTime;
+}
+
+/*----------------------------------------------------------*/
+void Boombox::rtcSetTimer(uint8_t minutes)
+{
+    _rtc->setTimer(minutes, TMR_1MIN, false);
+//    _rtc->setTimer(minutes, TMR_1Hz, false);
+}
+
+/*----------------------------------------------------------*/
+void Boombox::rtcEnableTimer()
+{    
+    rtcSetTimer(1);
+    _rtc->enableTimer();
+}
+
+/*----------------------------------------------------------*/
+void Boombox::rtcDisableTimer()
+{
+    _rtc->clearTimer();
+}
+
+/*----------------------------------------------------------*/
+void Boombox::irqRtc()
+{
+    rtcFlag = true;
+}
+
+/*----------------------------------------------------------*/
+bool Boombox::rtcIntpRcvd()
+{
+    return rtcFlag;
+}
+
+/*----------------------------------------------------------*/
+bool Boombox::rtcHandleIntp()
+{
+    bool trig = false;
+    if (rtcFlag)
     {
-        ss.write( buf[i] );
+        _minuteCnt++;
+        DBG_PRINTF("Minute count: %02d\n", _minuteCnt);
+        if (_minuteCnt >= _intv)
+        {
+            trig = true;
+            _minuteCnt = 0;
+            DBG_PRINTF("Interval timeout\n");
+        }
+
+        _rtc->resetTimer();
+        rtcFlag = false;   
     }
-    sei();
+    return trig;
+}
+
+/*----------------------------------------------------------*/
+void Boombox::rtcSetTrigger(uint16_t triggerIntv)
+{
+    _intv = triggerIntv;
 }
