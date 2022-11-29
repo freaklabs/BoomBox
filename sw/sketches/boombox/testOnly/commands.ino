@@ -15,6 +15,7 @@ void cmdTableInit()
   cmd.add("setmaxsounds", cmdSetMaxSounds);
   cmd.add("setshuffle", cmdSetShuffle);
   cmd.add("setinterval", cmdSetInterval);
+  cmd.add("setdelay", cmdSetDelay);
   cmd.add("setoffdelay", cmdSetOffDelay);
   cmd.add("dump", cmdDumpMeta);
   cmd.add("dumplist", cmdDumpPlaylist);
@@ -42,6 +43,23 @@ void cmdSetName(int argCnt, char **args)
   memset(meta.devName, 0, sizeof(meta.devName));
   strCat(buf, 1, argCnt, args);
   strncpy(meta.devName, buf, MAX_FIELD_SIZE - 1);
+  EEPROM.put(EEPROM_META_LOC, meta);
+}
+
+/************************************************************/
+//
+/************************************************************/
+void cmdSetDelay(int argCnt, char **args)
+{
+  if (argCnt != 2)
+  {
+    Serial.println("Incorrect number of arguments.");
+    return;
+  }
+
+  uint16_t delayTime = cmd.conv(args[1]);
+  EEPROM.get(EEPROM_META_LOC, meta);
+  meta.delayTime = delayTime;
   EEPROM.put(EEPROM_META_LOC, meta);
 }
 
