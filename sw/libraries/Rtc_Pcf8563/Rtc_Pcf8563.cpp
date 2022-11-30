@@ -399,10 +399,6 @@ void Rtc_Pcf8563::setTimer(byte value, byte frequency, bool is_pulsed)
     timer_control &= ~0x03; // clear last two bits
     timer_control |= (frequency & RTCC_TIMER_TD10); // use only last 2 bits
 
-    Serial.println(frequency);
-    Serial.println(RTCC_TIMER_TD10);
-    Serial.println(timer_control);
-
     Wire.beginTransmission(Rtcc_Addr);
     Wire.write((byte)RTCC_TIMER1_ADDR);
     Wire.write((byte)timer_control);
