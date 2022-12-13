@@ -20,6 +20,33 @@ void cmdTableInit()
   cmd.add("config", cmdDumpConfig);
   cmd.add("dumplist", cmdDumpPlaylist);
   cmd.add("normal", cmdSetNormal);
+  cmd.add("help", cmdHelp);
+}
+
+/************************************************************/
+
+/************************************************************/
+void cmdHelp(int argCnt, char **args)
+{
+    (void) argCnt;
+    (void) args;
+        
+    Serial.println(F("play          - Play sound. Usage: 'play <sound number>'"));        
+    Serial.println(F("stop          - Stop a sound from playing. Usage: 'stop'")); 
+    Serial.println(F("vol           - Set volume. Usage: 'vol <num from 1-30>'"));
+    Serial.println(F("pause         - Pause sound playing. Usage: 'pause'"));
+    Serial.println(F("resume        - Resume sound playing. Usage: 'resume'"));
+    Serial.println(F("sleep         - Go into sleep mode. Need to reset to exit sleep mode. Usage: 'sleep'"));
+    Serial.println(F("setname       - Set name. Usage: 'setname <name>'"));
+    Serial.println(F("setid         - Set boombox ID. Usage: 'setid <num from 0-255>'"));
+    Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));
+    Serial.println(F("setmaxsounds  - Set max number of sounds. Usage: 'setmaxsounds <num>'"));
+    Serial.println(F("setshuffle    - Set shuffle mode. Usage: 'setshuffle <0=standalone, 1=camera trap>'"));
+    Serial.println(F("setinterval   - Set interval. Currently unused."));
+    Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in millisec>'"));
+    Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in msec>'"));    
+    Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
+    Serial.println(F("normal        - Go into normal (deployment) mode and exit command line mode. Usage: 'normal'"));
 }
 
 /********************************************************************/
