@@ -45,8 +45,8 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("setmaxsounds  - Set max number of sounds. Usage: 'setmaxsounds <num>'"));
     Serial.println(F("setshuffle    - Set shuffle mode. Usage: 'setshuffle <0=standalone, 1=camera trap>'"));
     Serial.println(F("setinterval   - Set interval. Currently unused."));
-    Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in millisec>'"));
-    Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in msec>'"));    
+    Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in seconds>'"));
+    Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in seconds>'"));    
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("ledchase      - Display LED chase effect. Mainly for testing LEDs. Usage: 'ledchase'"));
     Serial.println(F("ledflash      - Display LED flash effect. Mainly for testing LEDs. Usage: 'ledflash'"));
