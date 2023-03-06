@@ -22,7 +22,8 @@ Boombox::Boombox()
     pinAuxLed       = 13;
     pinAuxEnb 		= 17;
  	pinAuxData0 	= 4;
-    pinAuxData1 	= 10;     
+    pinAuxData1 	= 10; 
+    pinRandSeed     = A0;    
 
     _vol           	= 26;
     _delayVal      	= 0;
@@ -33,6 +34,8 @@ Boombox::Boombox()
     pinMode(pinPIR, INPUT);
     pinMode(pinButton, INPUT);
     pinMode(pinBusy, INPUT);
+    pinMode(SDA, INPUT_PULLUP);
+    pinMode(SCL, INPUT_PULLUP);    
 
     pinMode(pinAmpShutdn, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
@@ -76,7 +79,19 @@ void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
 // Methods for controlling the MP3 player
 /*----------------------------------------------------------*/
 
-// initialize the pushbutton
+/*----------------------------------------------------------*/
+// enable the auxiliary port power
+void Boombox::auxEnable()
+{
+    digitalWrite(pinAuxEnb, HIGH);
+}
+
+/*----------------------------------------------------------*/
+// disable the auxiliary port power
+void Boombox::auxDisable()
+{
+    digitalWrite(pinAuxEnb, LOW);
+}
 
 /*----------------------------------------------------------*/
 void Boombox::dispBanner()

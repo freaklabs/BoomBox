@@ -9,6 +9,8 @@ void cmdTableInit()
     cmd.add("pause", cmdPause);
     cmd.add("resume", cmdResume);
     cmd.add("sleep", cmdSleep);
+    cmd.add("settime", cmdSetDateTime);
+    cmd.add("gettime", cmdGetDateTime);       
     cmd.add("setname", cmdSetName);
     cmd.add("setid", cmdSetId);
     cmd.add("setmode", cmdSetMode);
@@ -44,6 +46,8 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("setinterval   - Set interval. Currently unused."));
     Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in seconds>'"));
     Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in seconds>'"));    
+    Serial.println(F("settime       - Set current time. Usage: 'settime <year (2 digits)> <mon> <day> <hour> <min> <sec>'"));
+    Serial.println(F("gettime       - Get current time. Usage: 'gettime'"));
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
 }
 
@@ -56,6 +60,42 @@ void cmdDumpPlaylist(int argCnt, char **args)
     (void) args;
 
     boombox.dumpPlaylist();
+}
+
+/**************************************************************************/
+// setDateTime
+/**************************************************************************/
+void cmdSetDateTime(int argCnt, char **args)
+{
+#if (BOOMBOX == 1)    
+    (void) argCnt;
+    (void) args;
+        
+    uint8_t day, mon, year, hr, min, sec;
+
+    year = strtol(args[1], NULL, 10);
+    mon = strtol(args[2], NULL, 10);
+    day = strtol(args[3], NULL, 10);
+    hr = strtol(args[4], NULL, 10);
+    min = strtol(args[5], NULL, 10);
+    sec = strtol(args[6], NULL, 10);
+
+    rtc.setDateTime(day, 0, mon, 0, year, hr, min, sec);      
+    printf("Now = %s.\n", rtcPrintTimeAndDate());
+#endif    
+}
+
+/**************************************************************************/
+// getDateTime
+/**************************************************************************/
+void cmdGetDateTime(int argCnt, char **args)
+{
+#if (BOOMBOX == 1)    
+    (void) argCnt;
+    (void) args;
+        
+    printf("Now = %s.\n", rtcPrintTimeAndDate());
+#endif    
 }
 
 /************************************************************/
@@ -298,6 +338,9 @@ void cmdSleep(int argCnt, char **args)
     (void) args;
     
     boombox.ampDisable();
+    ss.end();
+    pinMode(9, INPUT);
+    pinMode(8, INPUT);
     boombox.sleep();
 
     // need to wake up if you sleep.
@@ -305,5 +348,6 @@ void cmdSleep(int argCnt, char **args)
     // ie: button push or motion event
     boombox.wake();
     boombox.ampEnable();
+    ss.begin(9600);
     delay(500);
 }

@@ -26,6 +26,7 @@ BoomboxBase::BoomboxBase()
     pinPIREnb       = 17;
     pin5vEnb        = 15;
     pinAuxLed       = 13;
+    pinRandSeed     = A0;
     
     intPIR          = 0;
     intAux          = 1;     
@@ -323,21 +324,9 @@ void BoomboxBase::setMaxSounds(uint8_t maxSounds)
 /************************************************************/
 // 
 /************************************************************/
-void BoomboxBase::shuffleEnable(uint8_t enb)
+void BoomboxBase::shuffleEnable(bool enb)
 {
-    if (enb == 0xFF)
-    {
-        // value is uninitialized so assume no shuffle
-        _shuffleEnable = 0;
-    }
-    else if (enb > 0)
-    {
-        _shuffleEnable = 1;
-    }
-    else
-    {
-        _shuffleEnable = 0;
-    }
+    _shuffleEnable = enb;
 }
 
 /************************************************************/
@@ -363,6 +352,21 @@ void BoomboxBase::initPlaylist()
     {
         shufflePlaylist();
     }
+}
+
+/************************************************************/
+// Random number seed generator for shuffle 
+/************************************************************/
+void BoomboxBase::shuffleSeed()
+{
+    uint16_t val = 0;
+
+    for (uint8_t i=0; i<3; i++)
+    {
+        val += (analogRead(pinRandSeed) & 0x7) << (3*i);
+        delay(10);
+    }
+    randomSeed(val);
 }
 
 /************************************************************/

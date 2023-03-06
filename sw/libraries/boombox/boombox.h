@@ -71,6 +71,10 @@ public:
     bool rtcHandleIntp();
     boolean rtcIntpRcvd();
     void rtcSetTrigger(uint16_t interval);
+
+    // aux
+    void auxEnable();
+    void auxDisable();
 };
 
 extern Boombox bb;

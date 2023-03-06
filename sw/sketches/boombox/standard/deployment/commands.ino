@@ -3,24 +3,26 @@
 /**************************************************************************/
 void cmdTableInit()
 {
-  cmd.add("play", cmdPlay);
-  cmd.add("stop", cmdStop);
-  cmd.add("vol", cmdSetVolume);
-  cmd.add("pause", cmdPause);
-  cmd.add("resume", cmdResume);
-  cmd.add("sleep", cmdSleep);
-  cmd.add("setname", cmdSetName);
-  cmd.add("setid", cmdSetId);
-  cmd.add("setmode", cmdSetMode);
-  cmd.add("setmaxsounds", cmdSetMaxSounds);
-  cmd.add("setshuffle", cmdSetShuffle);
-  cmd.add("setinterval", cmdSetInterval);
-  cmd.add("setdelay", cmdSetDelay);
-  cmd.add("setoffdelay", cmdSetOffDelay);
-  cmd.add("config", cmdDumpConfig);
-  cmd.add("dumplist", cmdDumpPlaylist);
-  cmd.add("normal", cmdSetNormal);
-  cmd.add("help", cmdHelp);
+    cmd.add("play", cmdPlay);
+    cmd.add("stop", cmdStop);
+    cmd.add("vol", cmdSetVolume);
+    cmd.add("pause", cmdPause);
+    cmd.add("resume", cmdResume);
+    cmd.add("sleep", cmdSleep);
+    cmd.add("settime", cmdSetDateTime);
+    cmd.add("gettime", cmdGetDateTime);     
+    cmd.add("setname", cmdSetName);
+    cmd.add("setid", cmdSetId);
+    cmd.add("setmode", cmdSetMode);
+    cmd.add("setmaxsounds", cmdSetMaxSounds);
+    cmd.add("setshuffle", cmdSetShuffle);
+    cmd.add("setinterval", cmdSetInterval);
+    cmd.add("setdelay", cmdSetDelay);
+    cmd.add("setoffdelay", cmdSetOffDelay);
+    cmd.add("config", cmdDumpConfig);
+    cmd.add("dumplist", cmdDumpPlaylist);
+    cmd.add("normal", cmdSetNormal);
+    cmd.add("help", cmdHelp);
 }
 
 /************************************************************/
@@ -71,6 +73,42 @@ void cmdDumpPlaylist(int argCnt, char **args)
     (void) args;
 
     boombox.dumpPlaylist();
+}
+
+/**************************************************************************/
+// setDateTime
+/**************************************************************************/
+void cmdSetDateTime(int argCnt, char **args)
+{
+#if (BOOMBOX == 1)    
+    (void) argCnt;
+    (void) args;
+        
+    uint8_t day, mon, year, hr, min, sec;
+
+    year = strtol(args[1], NULL, 10);
+    mon = strtol(args[2], NULL, 10);
+    day = strtol(args[3], NULL, 10);
+    hr = strtol(args[4], NULL, 10);
+    min = strtol(args[5], NULL, 10);
+    sec = strtol(args[6], NULL, 10);
+
+    rtc.setDateTime(day, 0, mon, 0, year, hr, min, sec);      
+    printf("Now = %s.\n", rtcPrintTimeAndDate());
+#endif    
+}
+
+/**************************************************************************/
+// getDateTime
+/**************************************************************************/
+void cmdGetDateTime(int argCnt, char **args)
+{
+#if (BOOMBOX == 1)    
+    (void) argCnt;
+    (void) args;
+        
+    printf("Now = %s.\n", rtcPrintTimeAndDate());
+#endif    
 }
 
 /************************************************************/

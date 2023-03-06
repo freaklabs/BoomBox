@@ -14,9 +14,7 @@
 #else
     #warning "BOOMBOX"
     #include <boombox.h>
-    #include <Rtc_Pcf8563.h>
     #define boombox bb
-    Rtc_Pcf8563 rtc; 
 #endif
 
 #define EEPROM_META_LOC 0
@@ -36,6 +34,8 @@ typedef struct
     uint16_t offDelayTime;
 } meta_t;
 meta_t meta;
+
+char bufTime[MAX_FIELD_SIZE];
 
 // this is only used for printf
 FILE uartout = {0,0,0,0,0,0,0,0};
@@ -58,18 +58,29 @@ void setup()
     if (meta.devID == 0xFF)
     {
         // EEPROM uninitialized. initialize metadata
-        Serial.println(F("EEPROM uninitialized. Please set EEPROM."));
+        Serial.println(F("EEPROM uninitialized. Installing default configuration settings."));
         Serial.println(F("Reset when finished."));
+        memset(meta.devName, 0, sizeof(meta.devName));
+        memcpy(meta.devName, "TEST", strlen("TEST"));
+        meta.devID = 0;
+        meta.maxSounds = 5;
+        meta.shuffleEnable = 0;
+        meta.devMode = 0;    
+        meta.devInterval = 255;
+        meta.delayTime = 0;
+        meta.offDelayTime= 0;
+        EEPROM.put(EEPROM_META_LOC, meta);
+        
         while (1)
         {
             cmd.poll();
         }
     }
 
-#if (BOOMBOX_BASE == 1)            
-    boombox.begin(&ss);
+#if (BOOMBOX == 1) 
+    boombox.begin(&ss, &rtc);               
 #else
-    boombox.begin(&ss, &rtc);
+    boombox.begin(&ss);
 #endif
 
     if (meta.devMode == 0)
@@ -81,11 +92,16 @@ void setup()
     boombox.setMaxSounds(meta.maxSounds);
     
     boombox.dispBanner();
-    Serial.println(F("Boombox Standalone Sketch"));
+    Serial.println(F("Boombox TestOnly Sketch"));
+    printf("Current time is %s.\n", rtcPrintTimeAndDate());  
 
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
-    boombox.shuffleEnable(meta.shuffleEnable);
+    if (meta.shuffleEnable == 1)
+    {
+        boombox.shuffleSeed();
+        boombox.shuffleEnable(true);
+    } 
 
     // create the initial playlist
     boombox.initPlaylist();        

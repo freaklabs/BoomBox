@@ -15,6 +15,7 @@ public:
     uint8_t pinPIR;
     uint8_t pinButton;
     uint8_t pinBusy;
+    uint8_t pinRandSeed;
 
     uint8_t pinAmpShutdn;
     uint8_t pinBoostEnb;
@@ -72,8 +73,9 @@ public:
     void reg5vDisable();
 
     void setMaxSounds(uint8_t maxSounds);
-    void shuffleEnable(uint8_t enb);
+    void shuffleEnable(bool enb);
     void initPlaylist();
+    void shuffleSeed();
     void shufflePlaylist();
     void dumpPlaylist();
     uint8_t getNextSound();

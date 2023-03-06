@@ -47,6 +47,7 @@ meta_t meta;
 // this is only used for printf
 FILE uartout = {0,0,0,0,0,0,0,0};
 
+char bufTime[MAX_FIELD_SIZE];
 bool normalMode = true;
 uint8_t timeCount = 0;
 uint32_t now;
@@ -71,20 +72,28 @@ void setup()
     if (meta.devID == 0xFF)
     {
         // EEPROM uninitialized. initialize metadata
-        Serial.println(F("EEPROM uninitialized. Please set EEPROM."));
+        Serial.println(F("EEPROM uninitialized. Installing default configuration settings."));
         Serial.println(F("Reset when finished."));
+        memset(meta.devName, 0, sizeof(meta.devName));
+        memcpy(meta.devName, "TEST", strlen("TEST"));
+        meta.devID = 0;
+        meta.maxSounds = 5;
+        meta.shuffleEnable = 0;
+        meta.devMode = 0;    
+        meta.devInterval = 255;
+        meta.delayTime = 0;
+        meta.offDelayTime= 0;
+        EEPROM.put(EEPROM_META_LOC, meta);
         while (1)
         {
             cmd.poll();
         }
     }
 
-#if (BOOMBOX_BASE == 1)            
-    // original version has no real time clock
-    boombox.begin(&ss);
+#if (BOOMBOX == 1) 
+    boombox.begin(&ss, &rtc);               
 #else
-    // pass in the real time clock
-    boombox.begin(&ss, &rtc);
+    boombox.begin(&ss);
 #endif
 
 #if (TESTONLY == 1)
@@ -105,10 +114,18 @@ void setup()
 
     // set maximum sounds based on metadata
     boombox.setMaxSounds(meta.maxSounds);
+
+    boombox.dispBanner();
+    Serial.println(F("Boombox Deployment Sketch"));
+    printf("Current time is %s.\n", rtcPrintTimeAndDate());  
     
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
-    boombox.shuffleEnable(meta.shuffleEnable);
+    if (meta.shuffleEnable == 1)
+    {
+        boombox.shuffleSeed();
+        boombox.shuffleEnable(true);
+    } 
 
     // create the initial playlist
     boombox.initPlaylist();  
@@ -146,7 +163,7 @@ void loop()
     
             // enable amp
             boombox.ampEnable();
-            delay(AMP_ENABLE_DELAY); 
+            delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
     
             // play sound based on randomized playlist
             boombox.playBusy(nextSound);    
