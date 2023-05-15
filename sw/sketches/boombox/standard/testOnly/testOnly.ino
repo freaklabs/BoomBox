@@ -83,6 +83,10 @@ void setup()
     boombox.begin(&ss);
 #endif
 
+    // adding delay to allow power supply to ramp to proper value
+    delay(500);
+    digitalWrite(bb.pinAmpShutdn, HIGH);
+
     if (meta.devMode == 0)
     {
        // in standalone mode. initialize button for triggering system
