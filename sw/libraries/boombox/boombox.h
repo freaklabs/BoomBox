@@ -70,6 +70,7 @@ public:
     void rtcDisableTimer();
     bool rtcHandleIntp();
     boolean rtcIntpRcvd();
+    void rtcClearIntp();
     void rtcSetTrigger(uint16_t interval);
 
     // aux

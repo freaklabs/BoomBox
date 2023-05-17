@@ -248,11 +248,12 @@ void BoomboxBase::clearAuxFlag()
 /************************************************************/
 void BoomboxBase::sleep()
 {
-    // shut down everything else
+    // shut down software serial
+//    ss->end();
 
+    // shut down everything else
     digitalWrite(pinMp3Enb, LOW);
     digitalWrite(pinBoostEnb, LOW);
-    digitalWrite(pin5vEnb, LOW);
     wdt_disable();
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
@@ -264,9 +265,13 @@ void BoomboxBase::sleep()
 void BoomboxBase::wake()
 {
     wdt_enable(WDTO_8S);
-    digitalWrite(pinMp3Enb, HIGH);
+    
+    // turn on 5V supply and allow voltage to stabilize
     digitalWrite(pinBoostEnb, HIGH);
+    delay(100);
+
     digitalWrite(pinMp3Enb, HIGH);
+//    ss->begin(9600);    
 
     // need a delay here to start up the mp3 player
     delay(100);

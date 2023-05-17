@@ -46,7 +46,7 @@ Boombox::Boombox()
     pinMode(pinAuxData1, OUTPUT);
     pinMode(pinAuxLed, OUTPUT);
 
-    digitalWrite(pinAmpShutdn, HIGH);
+    digitalWrite(pinAmpShutdn, LOW);
     digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pin5vEnb, LOW);
@@ -108,13 +108,20 @@ void Boombox::dispBanner()
 /*----------------------------------------------------------*/
 void Boombox::sleep()
 {
-    // shut down everything else
+    
+    // shut down software serial
+//    ss->end();
+//    DDRB &= 0xFE;
 
+    // shut down everything else
     digitalWrite(pinMp3Enb, LOW);
-    digitalWrite(pinBoostEnb, LOW);
-    digitalWrite(pin5vEnb, LOW);
     digitalWrite(pinAuxEnb, LOW);
     wdt_disable();
+
+    // turn off 5V supply and allow voltage to stabilize
+    delay(500);
+    digitalWrite(pin5vEnb, HIGH);
+    digitalWrite(pinBoostEnb, LOW);
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
 }
@@ -123,10 +130,16 @@ void Boombox::sleep()
 void Boombox::wake()
 {
     wdt_enable(WDTO_8S);
-    digitalWrite(pinMp3Enb, HIGH);
+
+    // turn on 5V supply and allow voltage to stabilize
     digitalWrite(pinBoostEnb, HIGH);
+    digitalWrite(pin5vEnb, HIGH);
+    delay(1000);
+
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinAuxEnb, HIGH);
+//    DDRB |= 0x01;
+//    ss->begin(9600);
 
     // need a delay here to start up the mp3 player
     delay(100);
@@ -212,6 +225,12 @@ void Boombox::irqRtc()
 bool Boombox::rtcIntpRcvd()
 {
     return rtcFlag;
+}
+
+/*----------------------------------------------------------*/
+void Boombox::rtcClearIntp()
+{
+    rtcFlag = false;
 }
 
 /*----------------------------------------------------------*/
