@@ -1,3 +1,42 @@
+/*
+Deployment - Time-based Playlists
+This is an application specific sketch based on the original deployment code. 
+This application allows for a maximum of 2 playlists which can be played based on time of day.
+
+Instructions for use:
+1) Define the number of sounds for playlist 0. This assumes that the sounds on the SD card 
+follow the standard naming convention, ie: 001.mp3, 001-leopard.mp3, leopard-001.mp3, etc
+Command: 'setnumsounds 0 <number of sounds>'
+
+2) Define the number of sounds for playlist 1. The starting index for playlist 1 sounds should be immediately after
+the last sound in playlist 0. For example, if you have 40 sounds in playlist 0, then the starting index for the first sound
+for playlist 1 should be 41. This assumes that the sounds on the SD card 
+follow the standard naming convention, ie: 041.mp3, 041-leopard.mp3, leopard-041.mp3, etc.
+Command: 'setnumsounds 1 <number of sounds>'
+
+3) Set the start time of playlist 0. This is based on a daily schedule so just set the time in hours and minutes. Please note this 
+is based on a 24-hour time.
+Command: 'setplaylisttime 0 <hour> <min>' 
+Example: setplaylisttime 0 5 00
+Sets the start time of playlist 0 to 5 am every day.
+
+4) Set the start time of playlist 1. This is based on a daily schedule so just set the time in hours and minutes. Please note this 
+is based on a 24-hour time.
+Command: 'setplaylisttime 1 <hour> <min>' 
+Example: setplaylisttime 1 18 00
+Sets the start time of playlist 1 to 6 pm every day.
+
+5) Setting the shuffle enable config parameter to 1 will shuffle both playlists each time they go through one full cycle. 
+
+6) To test this code is working, you can go into the command line mode (type 'c' immediately after reset). Then use the testactive command
+with whatever time you want to display which playlist will be active.
+Command: 'testactive <hour> <min>'
+Example: 'testactive 3 15'
+This will inform you which playlist is active at 3:15 am based on your settings.
+
+*/
+
+
 #include <cmdArduino.h>
 #include <EEPROM.h>
 #include <limits.h>

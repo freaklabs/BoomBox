@@ -1,3 +1,38 @@
+/*
+Deployment - Hourly Playback
+This is an application specific sketch based on the original deployment code. 
+This application plays back a sound at the same time (in minutes) every hour
+
+Instructions for use:
+1) Define the number of minutes after the hour to play back the sound.
+Command: 'setplaytime <minutes>'
+Example: 'setplaytime 20'
+Will play one sound at 20 minutes past each hour
+
+2) To test this code, leave system connected to a computer with the USB dongle 
+inserted into Boombox. Run this code and keep serial monitor open over the course
+of 1 hour or more. It will print every minute that passes and also print the
+minute that playback will occur.
+Ex:
+(set to play back 21 minutes past every hour)
+interrupt received. min = 15.
+interrupt received. min = 16.
+interrupt received. min = 17.
+interrupt received. min = 18.
+interrupt received. min = 19.
+interrupt received. min = 20.
+interrupt received. min = 21.
+playback
+Index: 1, Val: 2
+interrupt received. min = 22.
+interrupt received. min = 23.
+interrupt received. min = 24.
+interrupt received. min = 25.
+interrupt received. min = 26.
+interrupt received. min = 27.
+
+*/
+
 #include <cmdArduino.h>
 #include <EEPROM.h>
 #include <limits.h>
