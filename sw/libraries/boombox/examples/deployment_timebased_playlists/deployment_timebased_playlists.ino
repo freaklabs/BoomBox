@@ -81,7 +81,7 @@ typedef struct
     uint8_t devID;
     uint8_t shuffleEnable;
     uint8_t devMode;    
-    int16_t devInterval;
+    uint16_t devInterval;
     uint16_t delayTime;
     uint16_t offDelayTime;
     ts_t playListTime[NUM_PLAYLISTS];
@@ -231,7 +231,7 @@ void loop()
             // delay for delayTime milliseconds after trigger has happened. 
             // This delays playing the sound immediately after trigger 
             now = millis();
-            while (elapsedTime(now) < (meta.delayTime * 1000))
+            while (elapsedTime(now) < ((uint32_t)meta.delayTime * 1000))
             {
                 wdt_reset();
             }
@@ -252,10 +252,12 @@ void loop()
             // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
             // to be triggered.
             now = millis();
-            while (elapsedTime(now) < (meta.offDelayTime * 1000))
+            uint32_t totalDelay = (uint32_t)meta.offDelayTime *  1000;   
+            while (elapsedTime(now) < totalDelay)
             {
                 wdt_reset();
             }            
+            Serial.println("*** Done ***");
 
             // clear interrupt flag after sample is played
             boombox.clearAuxFlag();

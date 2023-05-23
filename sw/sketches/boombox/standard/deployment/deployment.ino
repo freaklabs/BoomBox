@@ -24,7 +24,7 @@
 
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 50
-#define AMP_ENABLE_DELAY 500
+#define AMP_ENABLE_DELAY 1000
 #define CMD_MODE_TIME_LIMIT 30
 #define START_WAIT_TIME 5000
 #define ONE_MINUTE 60000
@@ -79,7 +79,7 @@ void setup()
         meta.devID = 0;
         meta.maxSounds = 5;
         meta.shuffleEnable = 0;
-        meta.devMode = 0;    
+        meta.devMode = 1;    
         meta.devInterval = 255;
         meta.delayTime = 0;
         meta.offDelayTime= 0;
@@ -153,28 +153,31 @@ void loop()
             // delay for delayTime milliseconds after trigger has happened. 
             // This delays playing the sound immediately after trigger 
             now = millis();
-            while (elapsedTime(now) < (meta.delayTime * 1000))
+            while (elapsedTime(now) < ((uint32_t)meta.delayTime * 1000))
             {
                 wdt_reset();
             }
               
             // retrieve next sound index
             nextSound = boombox.getNextSound();        
-    
+
             // enable amp
-            boombox.ampEnable();
+            boombox.ampEnable();       
             delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
-    
+
             // play sound based on randomized playlist
             boombox.playBusy(nextSound);    
 
-            // disable amp before going to sleep
-            boombox.ampDisable();     
+            // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+            // with additional delay after to allow amp to shut down
+            delay(500);
+            boombox.ampDisable();  
+            delay(1000);   
                     
             // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
             // to be triggered.
             now = millis();
-            while (elapsedTime(now) < (meta.offDelayTime * 1000))
+            while (elapsedTime(now) < ((uint32_t)meta.offDelayTime * 1000))
             {
                 wdt_reset();
             }            

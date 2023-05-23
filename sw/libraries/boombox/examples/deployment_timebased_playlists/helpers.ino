@@ -93,6 +93,8 @@ void shufflePlaylist(uint8_t listNum)
         list[i] = startIndex+i+1;
     }
 
+    //Serial.println(F("Shuffling playlist"));
+
     // shuffle playlist
     for(i = 0; i < nvalues-1; i++) 
     {
@@ -103,6 +105,8 @@ void shufflePlaylist(uint8_t listNum)
         list[i] = list[i+c]; 
         list[i+c] = t;    
     }
+    //dumpPlaylist(0);
+    //dumpPlaylist(1);
 }
 
 /************************************************************************/
@@ -166,6 +170,22 @@ uint8_t getNextSound(uint8_t listNum)
     index++; 
     
     return retVal;
+}
+
+/************************************************************************/
+//  dump playlist  
+/************************************************************************/
+void dumpPlaylist(uint8_t listNum)
+{
+    uint8_t *list;
+    list = playlist[listNum];
+    
+    for (int i=0; i<meta.numSounds[listNum]; i++)
+    {
+        Serial.print(list[i]);
+        Serial.print(", ");
+    }
+    Serial.println();
 }
 #endif  
 

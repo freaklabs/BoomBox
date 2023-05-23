@@ -17,7 +17,8 @@ void cmdTableInit()
     cmd.add("testactive", cmdTestActive);
     cmd.add("config", cmdDumpConfig);
     cmd.add("normal", cmdSetNormal);
-    cmd.add("help", cmdHelp);    
+    cmd.add("help", cmdHelp);  
+    cmd.add("test", cmdTest);   
 }
 
 /************************************************************/
@@ -43,6 +44,15 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("setnumsounds  - Set max number of sounds for each playlist. Usage: 'setnumsounds <playlist num> <maxsounds>'")); 
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("normal        - Go into normal (deployment) mode and exit command line mode. Usage: 'normal'"));
+}
+
+/********************************************************************/
+// 
+/********************************************************************/
+void cmdTest(int argCnt, char **args)
+{
+    uint8_t listNum = cmd.conv(args[1]);
+    getNextSound(listNum);
 }
 
 /********************************************************************/
