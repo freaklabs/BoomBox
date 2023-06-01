@@ -6,8 +6,6 @@ void cmdTableInit()
     cmd.add("play", cmdPlay);
     cmd.add("stop", cmdStop);
     cmd.add("vol", cmdSetVolume);
-    cmd.add("pause", cmdPause);
-    cmd.add("resume", cmdResume);
     cmd.add("sleep", cmdSleep);
     cmd.add("settime", cmdSetDateTime);
     cmd.add("gettime", cmdGetDateTime);     
@@ -20,33 +18,10 @@ void cmdTableInit()
     cmd.add("setdelay", cmdSetDelay);
     cmd.add("setoffdelay", cmdSetOffDelay);
     cmd.add("config", cmdDumpConfig);
-    cmd.add("dumplist", cmdDumpPlaylist);
+//    cmd.add("dumplist", cmdDumpPlaylist);
     cmd.add("normal", cmdSetNormal);
     cmd.add("help", cmdHelp);
-    cmd.add("ampenable", cmdAmpEnable); 
 }
-
-/************************************************************/
-
-/************************************************************/
-void cmdAmpEnable(int argCnt, char **args)
-{
-    uint8_t enb = cmd.conv(args[1]);
-
-    if (enb)
-    {
-        digitalWrite(bb.pinBoostEnb, HIGH);
-        delay(500);
-        digitalWrite(bb.pinAmpShutdn, HIGH);
-    }
-    else
-    {
-        digitalWrite(bb.pinAmpShutdn, LOW); 
-        delay(500);
-        digitalWrite(bb.pinBoostEnb, LOW);
-    }
-}
-
 
 /************************************************************/
 
