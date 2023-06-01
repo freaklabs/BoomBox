@@ -22,6 +22,7 @@
     Rtc_Pcf8563 rtc; 
 #endif
 
+#define SKETCH_VERSION "1.16"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
@@ -115,9 +116,14 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
-    boombox.dispBanner();   // display banner
-    Serial.println(F("Boombox Deployment Sketch"));
-    printf_P(PSTR("Current time is %s.\n"), rtcPrintTimeAndDate());  
+
+    // display banner for version and diagnostic info
+    boombox.dispBanner();
+    Serial.print(F("Boombox Deployment Timelocked Sketch version: "));
+    Serial.println(F(SKETCH_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
+    printf("Current time is %s.\n", rtcPrintTimeAndDate());  
+    Serial.println(F("-------------------------------------------"));
     
     // set maximum sounds based on metadata
     boombox.setMaxSounds(meta.maxSounds);      

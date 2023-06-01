@@ -21,6 +21,7 @@
 #endif
 
 #define TESTONLY 0
+#define SKETCH_VERSION "1.16"
 
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 50
@@ -109,15 +110,17 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
-    boombox.dispBanner();   // display banner
-    Serial.println(F("Boombox Deployment Sketch"));
 
     // set maximum sounds based on metadata
     boombox.setMaxSounds(meta.maxSounds);
 
+    // display banner for version and diagnostic info
     boombox.dispBanner();
-    Serial.println(F("Boombox Deployment Sketch"));
+    Serial.print(F("Boombox Deployment Sketch version: "));
+    Serial.println(F(SKETCH_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
     printf("Current time is %s.\n", rtcPrintTimeAndDate());  
+    Serial.println(F("-------------------------------------------"));
     
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering

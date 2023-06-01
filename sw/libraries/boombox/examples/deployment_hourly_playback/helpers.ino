@@ -25,6 +25,43 @@ void selectMode()
     Serial.flush();
 }
 
+/************************************************************************/
+//    
+//    
+/************************************************************************/
+#if (BOOMBOX == 1)
+ts_t rtcGetTime()
+{
+    ts_t time;
+    memset(&time, 0, sizeof(time));
+
+    rtc.getDateTime();
+    time.year = 2000 + rtc.getYear();
+    time.mon = rtc.getMonth();
+    time.mday = rtc.getDay();
+    time.hour = rtc.getHour();
+    time.min = rtc.getMinute();
+    time.sec = rtc.getSecond();
+    return time;   
+}
+#endif  
+
+/**************************************************************************/
+// 
+/**************************************************************************/
+char *rtcPrintTimeAndDate()
+{
+#if (BOOMBOX == 1)  
+    ts_t time = rtcGetTime();
+    memset(bufTime, 0, sizeof(bufTime));
+    sprintf(bufTime, "%04d/%02d/%02d %02d:%02d:%02d", time.year, time.mon, time.mday, time.hour, time.min, time.sec);
+#else
+    sprintf(bufTime, "<unavailable>");
+#endif    
+    return bufTime;
+}
+
+
 /**************************************************************************/
 /*!
     Concatenate multiple strings from the command line starting from the

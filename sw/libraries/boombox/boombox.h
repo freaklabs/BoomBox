@@ -8,6 +8,7 @@
 
 #undef BOARD_VERSION
 #define BOARD_VERSION "v1.0+"
+#define LIB_VERSION "v1.16"
 
 // allows printing or not printing based on the DEBUG VAR
 #define DEBUG 1

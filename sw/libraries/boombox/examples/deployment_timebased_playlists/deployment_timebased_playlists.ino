@@ -62,6 +62,7 @@ This will inform you which playlist is active at 3:15 am based on your settings.
     Rtc_Pcf8563 rtc; 
 #endif
 
+#define SKETCH_VERSION "1.16"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
@@ -175,8 +176,14 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
-    boombox.dispBanner();   // display banner
-    Serial.println(F("Boombox Deployment Sketch"));
+
+    // display banner for version and diagnostic info
+    boombox.dispBanner();
+    Serial.print(F("Boombox Deployment Timebased Playlist Sketch version: "));
+    Serial.println(F(SKETCH_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
+    printf("Current time is %s.\n", rtcPrintTimeAndDate());  
+    Serial.println(F("-------------------------------------------"));
 
 #if (BOOMBOX == 1)
     printf_P(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  

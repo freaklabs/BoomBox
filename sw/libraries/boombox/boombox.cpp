@@ -69,10 +69,11 @@ void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
 
     ss = sser;
     ss->begin(9600);
-    setVol(_vol);
 
     _rtc = rtc;
     _rtc->clearTimer(); 
+    delay(100);
+    setVol(_vol);
 }
 
 /*----------------------------------------------------------*/
@@ -97,12 +98,10 @@ void Boombox::auxDisable()
 void Boombox::dispBanner()
 {
     Serial.println(F("-------------------------------------------"));
-    Serial.print(F("Boombox "));
+    Serial.print(F("Boombox Board version: "));
     Serial.println(F(BOARD_VERSION));
-    Serial.println(F("Designed by FreakLabs"));
-    Serial.print(F("Last modified: "));
-    Serial.println(F(__DATE__));
-    Serial.println(F("-------------------------------------------"));
+    Serial.print(F("Boombox Library version: "));
+    Serial.println(F(LIB_VERSION));
 }
 
 /*----------------------------------------------------------*/

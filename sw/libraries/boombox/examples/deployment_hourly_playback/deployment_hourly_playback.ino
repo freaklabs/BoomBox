@@ -58,6 +58,7 @@ interrupt received. min = 27.
     Rtc_Pcf8563 rtc; 
 #endif
 
+#define SKETCH_VERSION "1.16"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
@@ -153,8 +154,14 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
-    boombox.dispBanner();   // display banner
-    Serial.println(F("Boombox Deployment Sketch"));
+
+    // display banner for version and diagnostic info
+    boombox.dispBanner();
+    Serial.print(F("Boombox Deployment Hourly Playback Sketch version: "));
+    Serial.println(F(SKETCH_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
+    printf("Current time is %s.\n", rtcPrintTimeAndDate());  
+    Serial.println(F("-------------------------------------------"));
 
 #if (BOOMBOX == 1)
     printf_P(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  

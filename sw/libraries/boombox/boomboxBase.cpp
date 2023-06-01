@@ -62,9 +62,10 @@ void BoomboxBase::begin(SoftwareSerial *sser)
 
     ss = sser;
     ss->begin(9600);
-    setVol(_vol);
 
     wdt_enable(WDTO_8S);
+    delay(100);
+    setVol(_vol);
 }
 
 /*----------------------------------------------------------*/
