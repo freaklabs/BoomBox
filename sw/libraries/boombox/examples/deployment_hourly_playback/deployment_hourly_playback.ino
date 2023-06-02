@@ -58,7 +58,7 @@ interrupt received. min = 27.
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.16"
+#define SKETCH_VERSION "1.17"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0

@@ -17,7 +17,7 @@
     #define boombox bb
 #endif
 
-#define SKETCH_VERSION "1.16"
+#define SKETCH_VERSION "1.17"
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 50
 #define AMP_ENABLE_DELAY 1000
