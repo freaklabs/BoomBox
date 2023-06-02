@@ -329,9 +329,19 @@ void cmdDumpConfig(int argCnt, char **args)
 void cmdPlay(int argCnt, char **args)
 {
     (void) argCnt;   
-    
+   
     uint8_t track = cmd.conv(args[1]);
+
+    // enable amp
+    boombox.ampEnable();       
+    delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+    
     boombox.playBusy(track);
+
+    // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+    // with additional delay after to allow amp to shut down
+    delay(500);
+    boombox.ampDisable();      
 }
 
 /************************************************************/
