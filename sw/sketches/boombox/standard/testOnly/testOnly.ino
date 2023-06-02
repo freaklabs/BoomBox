@@ -20,6 +20,7 @@
 #define SKETCH_VERSION "1.16"
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 50
+#define AMP_ENABLE_DELAY 1000
 
 SoftwareSerial ss(9, 8);
 
@@ -85,8 +86,8 @@ void setup()
 #endif
 
     // adding delay to allow power supply to ramp to proper value
-    delay(500);
-    digitalWrite(bb.pinAmpShutdn, HIGH);
+    //delay(500);
+    //digitalWrite(bb.pinAmpShutdn, HIGH);
 
     if (meta.devMode == 0)
     {
@@ -134,8 +135,17 @@ void loop()
         // retrieve next sound index
         nextSound = boombox.getNextSound();
 
+        // enable amp
+        boombox.ampEnable();       
+        delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+
         // play next sound
-        boombox.play(nextSound); 
+        boombox.playBusy(nextSound); 
+
+        // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+        // with additional delay after to allow amp to shut down
+        delay(500);
+        boombox.ampDisable();            
 
         // clear interrupt flag
         boombox.clearAuxFlag();                     
