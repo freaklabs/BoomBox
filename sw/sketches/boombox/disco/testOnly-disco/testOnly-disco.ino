@@ -20,8 +20,10 @@
     Rtc_Pcf8563 rtc; 
 #endif
 
+#define SKETCH_VERSION "1.17"
 #define EEPROM_META_LOC 0
-#define MAX_FIELD_SIZE 50
+#define MAX_FIELD_SIZE 30
+#define AMP_ENABLE_DELAY 1000
 #define LED_COUNT 60
 #define LED_PIN0 4
 #define LED_PIN1 10
@@ -42,6 +44,8 @@ typedef struct
     uint16_t offDelayTime;
 } meta_t;
 meta_t meta;
+
+char bufTime[MAX_FIELD_SIZE];
 
 // this is only used for printf
 FILE uartout = {0,0,0,0,0,0,0,0};
@@ -64,18 +68,29 @@ void setup()
     if (meta.devID == 0xFF)
     {
         // EEPROM uninitialized. initialize metadata
-        Serial.println(F("EEPROM uninitialized. Please set EEPROM."));
+        Serial.println(F("EEPROM uninitialized. Installing default configuration settings."));
         Serial.println(F("Reset when finished."));
+        memset(meta.devName, 0, sizeof(meta.devName));
+        memcpy(meta.devName, "TEST", strlen("TEST"));
+        meta.devID = 0;
+        meta.maxSounds = 5;
+        meta.shuffleEnable = 0;
+        meta.devMode = 0;    
+        meta.devInterval = 255;
+        meta.delayTime = 0;
+        meta.offDelayTime= 0;
+        EEPROM.put(EEPROM_META_LOC, meta);
+        
         while (1)
         {
             cmd.poll();
         }
     }
 
-#if (BOOMBOX_BASE == 1)            
-    boombox.begin(&ss);
+#if (BOOMBOX == 1) 
+    boombox.begin(&ss, &rtc);               
 #else
-    boombox.begin(&ss, &rtc);
+    boombox.begin(&ss);
 #endif
 
     if (meta.devMode == 0)
@@ -84,6 +99,7 @@ void setup()
        Serial.println(F("Initializing button."));
        boombox.buttonInit(); 
     }
+    boombox.setMaxSounds(meta.maxSounds);
     
     // enable power to LEDs
     boombox.auxEnable();
@@ -101,15 +117,27 @@ void setup()
     // set up rest of boombox
     boombox.setMaxSounds(meta.maxSounds);
     
+    // display banner for version and diagnostic info
     boombox.dispBanner();
-    Serial.println(F("Boombox Standalone Sketch"));
+    Serial.print(F("Boombox Disco-TestOnly Sketch version: "));
+    Serial.println(F(SKETCH_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
+    printf(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  
+    Serial.println(F("-------------------------------------------"));
 
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
-    boombox.shuffleEnable(meta.shuffleEnable);
+    if (meta.shuffleEnable == 1)
+    {
+        boombox.shuffleSeed();
+        boombox.shuffleEnable(true);
+    } 
 
     // create the initial playlist
-    boombox.initPlaylist();        
+    boombox.initPlaylist();     
+
+   // clear interrupt flag if it is set
+   boombox.clearAuxFlag(); 
 }
 
 /************************************************************/
@@ -130,6 +158,10 @@ void loop()
         // retrieve next sound index
         nextSound = boombox.getNextSound();
 
+        // enable amp
+        boombox.ampEnable();       
+        delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+
         // play next sound
         boombox.play(nextSound); 
 
@@ -149,7 +181,12 @@ void loop()
             strip0.show();
             strip1.show();
             delay(50);         
-        }        
+        }     
+
+        // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+        // with additional delay after to allow amp to shut down
+        delay(500);
+        boombox.ampDisable();              
 
         // clear interrupt flag
         boombox.clearAuxFlag();                     

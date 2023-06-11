@@ -43,6 +43,7 @@ public:
     uint8_t pinAuxEnb = 17;
     uint8_t pinAuxData0 = 4;
     uint8_t pinAuxData1 = 10;
+    uint8_t pinMute = A0;
     uint8_t intNumRtc = 0;
     uint8_t intNumAux = 1;
 

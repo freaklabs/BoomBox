@@ -26,7 +26,7 @@ BoomboxBase::BoomboxBase()
     pinPIREnb       = 17;
     pin5vEnb        = 15;
     pinAuxLed       = 13;
-    pinRandSeed     = A0;
+    pinRandSeed         = A0;
     
     intPIR          = 0;
     intAux          = 1;     
@@ -44,7 +44,7 @@ BoomboxBase::BoomboxBase()
     pinMode(pin5vEnb, OUTPUT);
     pinMode(pinAuxLed, OUTPUT);
 
-    digitalWrite(pinBoostEnb, HIGH);
+    digitalWrite(pinBoostEnb, LOW);
     digitalWrite(pinAmpShutdn, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pin5vEnb, LOW);

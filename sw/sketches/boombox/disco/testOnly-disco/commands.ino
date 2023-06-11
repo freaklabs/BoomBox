@@ -4,24 +4,19 @@
 void cmdTableInit()
 {
     cmd.add("play", cmdPlay);
-    cmd.add("stop", cmdStop);
-    cmd.add("vol", cmdSetVolume);
-    cmd.add("pause", cmdPause);
-    cmd.add("resume", cmdResume);
-    cmd.add("sleep", cmdSleep);
+    cmd.add("stop", cmdStop);    
     cmd.add("setname", cmdSetName);
-    cmd.add("setid", cmdSetId);
+//    cmd.add("setid", cmdSetId);
     cmd.add("setmode", cmdSetMode);
     cmd.add("setmaxsounds", cmdSetMaxSounds);
     cmd.add("setshuffle", cmdSetShuffle);
-    cmd.add("setinterval", cmdSetInterval);
     cmd.add("setdelay", cmdSetDelay);
     cmd.add("setoffdelay", cmdSetOffDelay);
     cmd.add("config", cmdDumpConfig);
-    cmd.add("dumplist", cmdDumpPlaylist);
     cmd.add("ledchase", cmdLedChase);
     cmd.add("ledflash", cmdLedFlash);
-    cmd.add("help", cmdHelp);
+    cmd.add("dump", cmdDumpPlaylist);
+    cmd.add("help", cmdHelp);    
 }
 
 /************************************************************/
@@ -34,10 +29,6 @@ void cmdHelp(int argCnt, char **args)
         
     Serial.println(F("play          - Play sound. Usage: 'play <sound number>'"));        
     Serial.println(F("stop          - Stop a sound from playing. Usage: 'stop'")); 
-    Serial.println(F("vol           - Set volume. Usage: 'vol <num from 1-30>'"));
-    Serial.println(F("pause         - Pause sound playing. Usage: 'pause'"));
-    Serial.println(F("resume        - Resume sound playing. Usage: 'resume'"));
-    Serial.println(F("sleep         - Go into sleep mode. Need to reset to exit sleep mode. Usage: 'sleep'"));
     Serial.println(F("setname       - Set name. Usage: 'setname <name>'"));
     Serial.println(F("setid         - Set boombox ID. Usage: 'setid <num from 0-255>'"));
     Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));
@@ -49,6 +40,17 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("ledchase      - Display LED chase effect. Mainly for testing LEDs. Usage: 'ledchase'"));
     Serial.println(F("ledflash      - Display LED flash effect. Mainly for testing LEDs. Usage: 'ledflash'"));
+}
+
+/************************************************************/
+//
+/************************************************************/
+void cmdDumpPlaylist(int argCnt, char **args)
+{
+    (void) argCnt;
+    (void) args;
+
+    boombox.dumpPlaylist();
 }
 
 /************************************************************/
@@ -94,17 +96,6 @@ void cmdLedFlash(int arg_cnt, char **args)
 /************************************************************/
 //
 /************************************************************/
-void cmdDumpPlaylist(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-
-    boombox.dumpPlaylist();
-}
-
-/************************************************************/
-//
-/************************************************************/
 void cmdSetName(int argCnt, char **args)
 {
   char buf[MAX_FIELD_SIZE];
@@ -123,7 +114,7 @@ void cmdSetDelay(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -140,7 +131,7 @@ void cmdSetOffDelay(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -156,7 +147,7 @@ void cmdSetId(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -173,7 +164,7 @@ void cmdSetMode(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -181,8 +172,8 @@ void cmdSetMode(int argCnt, char **args)
 
   if (mode > 1)
   {
-    printf("ERROR: Invalid value. Setting to 0.\n");
-    printf("Usage: 0 = STANDALONE mode, 1 = TRAILCAM mode\n");
+    printf(PSTR("ERROR: Invalid value. Setting to 0.\n"));
+    printf(PSTR("Usage: 0 = STANDALONE mode, 1 = TRAILCAM mode\n"));
   }
   
   EEPROM.get(EEPROM_META_LOC, meta);
@@ -197,7 +188,7 @@ void cmdSetMaxSounds(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -215,7 +206,7 @@ void cmdSetShuffle(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -243,7 +234,7 @@ void cmdSetInterval(int argCnt, char **args)
 {
     if (argCnt != 2)
     {
-        Serial.println("Incorrect number of arguments.");
+        Serial.println(F("Incorrect number of arguments."));
         return;
     }
     
@@ -278,48 +269,19 @@ void cmdDumpConfig(int argCnt, char **args)
 void cmdPlay(int argCnt, char **args)
 {
     (void) argCnt;   
-    
+   
     uint8_t track = cmd.conv(args[1]);
-    boombox.play(track);
-}
 
-/************************************************************/
-// Set volume
-// Usage: vol <volume level>
-// volume level is between 0 and 30
-/************************************************************/
-void cmdSetVolume(int argCnt, char **args)
-{
-    (void) argCnt;
+    // enable amp
+    boombox.ampEnable();       
+    delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
     
-    uint8_t vol = cmd.conv(args[1]);
-    if (vol > 30)
-    {
-        vol = 30;
-    }
-    boombox.setVol(vol);
-}
+    boombox.playBusy(track);
 
-/************************************************************/
-// Pause playing
-/************************************************************/
-void cmdPause(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-    
-    boombox.pause();
-}
-
-/************************************************************/
-// Resume playing
-/************************************************************/
-void cmdResume(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-    
-    boombox.resume();
+    // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+    // with additional delay after to allow amp to shut down
+    delay(500);
+    boombox.ampDisable(); 
 }
 
 /************************************************************/
@@ -331,23 +293,4 @@ void cmdStop(int argCnt, char **args)
     (void) args;
         
     boombox.stop();
-}
-
-/************************************************************/
-// Go into hibernation mode
-/************************************************************/
-void cmdSleep(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-    
-    boombox.ampDisable();
-    boombox.sleep();
-
-    // need to wake up if you sleep.
-    // can only wake up from external interrupt,
-    // ie: button push or motion event
-    boombox.wake();
-    boombox.ampEnable();
-    delay(500);
 }

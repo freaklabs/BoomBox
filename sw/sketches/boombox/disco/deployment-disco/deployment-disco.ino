@@ -22,10 +22,11 @@
 #endif
 
 #define TESTONLY 0
+#define SKETCH_VERSION "1.17"
 
 #define EEPROM_META_LOC 0
-#define MAX_FIELD_SIZE 50
-#define AMP_ENABLE_DELAY 500
+#define MAX_FIELD_SIZE 30
+#define AMP_ENABLE_DELAY 1000
 #define CMD_MODE_TIME_LIMIT 30
 #define START_WAIT_TIME 5000
 #define ONE_MINUTE 60000
@@ -54,6 +55,7 @@ meta_t meta;
 // this is only used for printf
 FILE uartout = {0,0,0,0,0,0,0,0};
 
+char bufTime[MAX_FIELD_SIZE];
 bool normalMode = true;
 uint8_t timeCount = 0;
 uint32_t now;
@@ -78,20 +80,28 @@ void setup()
     if (meta.devID == 0xFF)
     {
         // EEPROM uninitialized. initialize metadata
-        Serial.println(F("EEPROM uninitialized. Please set EEPROM."));
+        Serial.println(F("EEPROM uninitialized. Installing default configuration settings."));
         Serial.println(F("Reset when finished."));
+        memset(meta.devName, 0, sizeof(meta.devName));
+        memcpy(meta.devName, "TEST", strlen("TEST"));
+        meta.devID = 0;
+        meta.maxSounds = 5;
+        meta.shuffleEnable = 0;
+        meta.devMode = 1;    
+        meta.devInterval = 255;
+        meta.delayTime = 0;
+        meta.offDelayTime= 0;
+        EEPROM.put(EEPROM_META_LOC, meta);
         while (1)
         {
             cmd.poll();
         }
     }
 
-#if (BOOMBOX_BASE == 1)            
-    // original version has no real time clock
-    boombox.begin(&ss);
+#if (BOOMBOX == 1) 
+    boombox.begin(&ss, &rtc);               
 #else
-    // pass in the real time clock
-    boombox.begin(&ss, &rtc);
+    boombox.begin(&ss);
 #endif
 
 #if (TESTONLY == 1)
@@ -121,15 +131,25 @@ void setup()
     
     // set up rest of boombox
     boombox.ampDisable();       // disable amplifier  
-    boombox.dispBanner();   // display banner
-    Serial.println(F("Boombox Deployment Sketch"));
 
     // set maximum sounds based on metadata
     boombox.setMaxSounds(meta.maxSounds);
+
+    // display banner for version and diagnostic info
+    boombox.dispBanner();
+    Serial.print(F("Boombox Disco-Deployment Sketch version: "));
+    Serial.println(F(SKETCH_VERSION));
+    Serial.println(F("Designed by FreakLabs"));
+    printf(PSTR("Current time is %s.\n"), bb.rtcPrintTimeAndDate());  
+    Serial.println(F("-------------------------------------------"));
     
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
-    boombox.shuffleEnable(meta.shuffleEnable);
+    if (meta.shuffleEnable == 1)
+    {
+        boombox.shuffleSeed();
+        boombox.shuffleEnable(true);
+    } 
 
     // create the initial playlist
     boombox.initPlaylist();  
@@ -157,18 +177,18 @@ void loop()
             // delay for delayTime milliseconds after trigger has happened. 
             // This delays playing the sound immediately after trigger 
             now = millis();
-            while (elapsedTime(now) < (meta.delayTime * 1000))
+            while (elapsedTime(now) < ((uint32_t)meta.delayTime * 1000))
             {
                 wdt_reset();
             }
               
             // retrieve next sound index
             nextSound = boombox.getNextSound();        
-    
+
             // enable amp
-            boombox.ampEnable();
-            delay(AMP_ENABLE_DELAY); 
-    
+            boombox.ampEnable();       
+            delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+
             // play sound based on randomized playlist
             boombox.play(nextSound);  
             
@@ -190,13 +210,16 @@ void loop()
                 delay(50);           
             }
 
-            // disable amp before going to sleep
-            boombox.ampDisable();     
+            // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+            // with additional delay after to allow amp to shut down
+            delay(500);
+            boombox.ampDisable();  
+            delay(1000);   
                     
             // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
             // to be triggered.
             now = millis();
-            while (elapsedTime(now) < (meta.offDelayTime * 1000))
+            while (elapsedTime(now) < ((uint32_t)meta.offDelayTime * 1000))
             {
                 wdt_reset();
             }            
