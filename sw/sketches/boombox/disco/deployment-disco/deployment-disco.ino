@@ -198,6 +198,7 @@ void loop()
             // flash LEDs while sound is playing
             while(boombox.isBusy())
             {
+                wdt_reset();
                 strip0.fill(strip0.Color(255, 255, 255));
                 strip1.fill(strip1.Color(255, 255, 255));
                 strip0.show();

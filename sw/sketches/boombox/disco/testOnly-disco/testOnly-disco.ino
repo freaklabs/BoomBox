@@ -171,6 +171,7 @@ void loop()
         // dispay LEDs
         while(boombox.isBusy())
         {
+            wdt_reset();
             strip0.fill(strip0.Color(255, 255, 255));
             strip1.fill(strip1.Color(255, 255, 255));
             strip0.show();
