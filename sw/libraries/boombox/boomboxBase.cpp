@@ -254,7 +254,10 @@ void BoomboxBase::sleep()
 
     // shut down everything else
     digitalWrite(pinMp3Enb, LOW);
+    delay(500);
     digitalWrite(pinBoostEnb, LOW);
+    delay(300);
+    digitalWrite(pin5vEnb, LOW);
     wdt_disable();
 
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
@@ -268,8 +271,10 @@ void BoomboxBase::wake()
     wdt_enable(WDTO_8S);
     
     // turn on 5V supply and allow voltage to stabilize
-    digitalWrite(pinBoostEnb, HIGH);
-    delay(100);
+    digitalWrite(pin5vEnb, HIGH);
+    delay(300);
+    digitalWrite(pinBoostEnb, HIGH);    
+    delay(1000);
 
     digitalWrite(pinMp3Enb, HIGH);
 //    ss->begin(9600);    

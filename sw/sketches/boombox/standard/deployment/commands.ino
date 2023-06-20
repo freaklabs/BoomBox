@@ -5,7 +5,7 @@ void cmdTableInit()
 {
     cmd.add("play", cmdPlay);
     cmd.add("stop", cmdStop);
-    cmd.add("vol", cmdSetVolume);
+//    cmd.add("vol", cmdSetVolume);
     cmd.add("sleep", cmdSleep);
     cmd.add("settime", cmdSetDateTime);
     cmd.add("gettime", cmdGetDateTime);     
