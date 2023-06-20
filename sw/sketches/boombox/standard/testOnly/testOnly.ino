@@ -14,10 +14,12 @@
 #else
     #warning "BOOMBOX"
     #include <boombox.h>
+    #include <Rtc_Pcf8563.h>
     #define boombox bb
+    Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.17"
+#define SKETCH_VERSION "1.18"
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 50
 #define AMP_ENABLE_DELAY 1000
@@ -96,6 +98,10 @@ void setup()
        boombox.buttonInit(); 
     }
     boombox.setMaxSounds(meta.maxSounds);
+
+// AKIBA TEST
+    boombox.ampEnable(); 
+// END TEST    
     
     // display banner for version and diagnostic info
     boombox.dispBanner();
@@ -114,7 +120,10 @@ void setup()
     } 
 
     // create the initial playlist
-    boombox.initPlaylist();        
+    boombox.initPlaylist();     
+
+   // clear interrupt flag if it is set
+   boombox.clearAuxFlag(); 
 }
 
 /************************************************************/
@@ -136,16 +145,16 @@ void loop()
         nextSound = boombox.getNextSound();
 
         // enable amp
-        boombox.ampEnable();       
-        delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+//        boombox.ampEnable();       
+//        delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
 
         // play next sound
         boombox.playBusy(nextSound); 
 
         // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
         // with additional delay after to allow amp to shut down
-        delay(500);
-        boombox.ampDisable();            
+//        delay(500);
+//        boombox.ampDisable();            
 
         // clear interrupt flag
         boombox.clearAuxFlag();                     

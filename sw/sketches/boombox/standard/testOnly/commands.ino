@@ -22,7 +22,8 @@ void cmdTableInit()
     cmd.add("config", cmdDumpConfig);
     cmd.add("dumplist", cmdDumpPlaylist);
     cmd.add("help", cmdHelp); 
-    cmd.add("ampenable", cmdAmpEnable); 
+    cmd.add("ampenb", cmdAmpEnable); 
+    cmd.add("boostenb", cmdBoostEnable); 
 }
 
 /************************************************************/
@@ -34,17 +35,32 @@ void cmdAmpEnable(int argCnt, char **args)
 
     if (enb)
     {
-        digitalWrite(bb.pinBoostEnb, HIGH);
-        delay(500);
-        digitalWrite(bb.pinAmpShutdn, HIGH);
+        digitalWrite(boombox.pinAmpShutdn, HIGH);
     }
     else
     {
-        digitalWrite(bb.pinAmpShutdn, LOW); 
-        delay(500);
-        digitalWrite(bb.pinBoostEnb, LOW);
+        digitalWrite(boombox.pinAmpShutdn, LOW); 
     }
 }
+
+
+/************************************************************/
+
+/************************************************************/
+void cmdBoostEnable(int argCnt, char **args)
+{
+    uint8_t enb = cmd.conv(args[1]);
+
+    if (enb)
+    {
+        digitalWrite(boombox.pinBoostEnb, HIGH);
+    }
+    else
+    {
+        digitalWrite(boombox.pinBoostEnb, LOW); 
+    }
+}
+
 
 /************************************************************/
 
