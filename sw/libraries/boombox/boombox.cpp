@@ -47,13 +47,15 @@ Boombox::Boombox()
     pinMode(pinAuxLed, OUTPUT);
 
     digitalWrite(pinAmpShutdn, LOW);
-    digitalWrite(pinBoostEnb, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
-    digitalWrite(pin5vEnb, LOW);
     digitalWrite(pinAuxEnb, LOW);
     digitalWrite(pinAuxData0, LOW);
     digitalWrite(pinAuxData1, LOW);
     digitalWrite(pinAuxLed, LOW);
+
+    digitalWrite(pin5vEnb, HIGH);
+    delay(300);
+    digitalWrite(pinBoostEnb, HIGH);
 
     attachInterrupt(intNumRtc, Boombox::irqRtc, FALLING);
     attachInterrupt(intNumAux, Boombox::irqAux, RISING);
@@ -132,6 +134,7 @@ void Boombox::wake()
     wdt_enable(WDTO_8S);
 
     // turn on 5V supply and allow voltage to stabilize
+    // power sequence to avoid spike
     digitalWrite(pin5vEnb, HIGH);
     delay(300);
     digitalWrite(pinBoostEnb, HIGH);    
