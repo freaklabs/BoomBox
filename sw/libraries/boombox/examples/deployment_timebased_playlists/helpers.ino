@@ -220,7 +220,7 @@ void dumpPlaylist(uint8_t listNum)
     for (int i=0; i<meta.numSounds[listNum]; i++)
     {
         Serial.print(list[i]);
-        Serial.print(", ");
+        Serial.print(F(", "));
     }
     Serial.println();
 }

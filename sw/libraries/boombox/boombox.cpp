@@ -30,7 +30,13 @@ Boombox::Boombox()
 
     intNumRtc 		= 0;
     intNumAux 		= 1;    
+}
 
+/************************************************************/
+// begin
+/************************************************************/
+void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
+{    
     pinMode(pinPIR, INPUT);
     pinMode(pinButton, INPUT);
     pinMode(pinBusy, INPUT);
@@ -46,6 +52,10 @@ Boombox::Boombox()
     pinMode(pinAuxData1, OUTPUT);
     pinMode(pinAuxLed, OUTPUT);
 
+    digitalWrite(pin5vEnb, HIGH);
+    delay(300);
+    digitalWrite(pinBoostEnb, HIGH);
+
     digitalWrite(pinAmpShutdn, LOW);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinAuxEnb, LOW);
@@ -53,19 +63,9 @@ Boombox::Boombox()
     digitalWrite(pinAuxData1, LOW);
     digitalWrite(pinAuxLed, LOW);
 
-    digitalWrite(pin5vEnb, HIGH);
-    delay(300);
-    digitalWrite(pinBoostEnb, HIGH);
-
     attachInterrupt(intNumRtc, Boombox::irqRtc, FALLING);
     attachInterrupt(intNumAux, Boombox::irqAux, RISING);
-}
 
-/************************************************************/
-// begin
-/************************************************************/
-void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
-{
     auxFlag = false;
     rtcFlag = false;
 

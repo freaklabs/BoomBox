@@ -17,8 +17,7 @@ void cmdTableInit()
     cmd.add("testactive", cmdTestActive);
     cmd.add("config", cmdDumpConfig);
     cmd.add("normal", cmdSetNormal);
-    cmd.add("help", cmdHelp);  
-    cmd.add("test", cmdTest);   
+    cmd.add("help", cmdHelp);   
 }
 
 /************************************************************/
@@ -44,15 +43,6 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("setnumsounds  - Set max number of sounds for each playlist. Usage: 'setnumsounds <playlist num> <maxsounds>'")); 
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("normal        - Go into normal (deployment) mode and exit command line mode. Usage: 'normal'"));
-}
-
-/********************************************************************/
-// 
-/********************************************************************/
-void cmdTest(int argCnt, char **args)
-{
-    uint8_t listNum = cmd.conv(args[1]);
-    getNextSound(listNum);
 }
 
 /********************************************************************/
@@ -91,7 +81,7 @@ void cmdInitPlaylist(int argCnt, char **args)
     numSounds = meta.numSounds[listNum];
     list = playlist[listNum];
 
-    printf("Playlist %d members: ", listNum);
+    printf_P(PSTR("Playlist %d members: "), listNum);
     for (int i=0; i<numSounds; i++)
     {
         if ((i%10) == 0)
@@ -252,7 +242,7 @@ void cmdSetMode(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
@@ -260,8 +250,8 @@ void cmdSetMode(int argCnt, char **args)
 
   if (mode > 1)
   {
-    printf("ERROR: Invalid value. Setting to 0.\n");
-    printf("Usage: 0 = STANDALONE mode, 1 = TRAILCAM mode\n");
+    Serial.println(F("ERROR: Invalid value. Setting to 0."));
+    Serial.println(F("Usage: 0 = STANDALONE mode, 1 = TRAILCAM mode"));
   }
   
   EEPROM.get(EEPROM_META_LOC, meta);
@@ -276,7 +266,7 @@ void cmdSetShuffle(int argCnt, char **args)
 {
   if (argCnt != 2)
   {
-    Serial.println("Incorrect number of arguments.");
+    Serial.println(F("Incorrect number of arguments."));
     return;
   }
 
