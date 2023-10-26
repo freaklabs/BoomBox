@@ -8,7 +8,7 @@
 
 #undef BOARD_VERSION
 #define BOARD_VERSION "v1.0+"
-#define LIB_VERSION "v1.18"
+#define LIB_VERSION "v1.19"
 
 // allows printing or not printing based on the DEBUG VAR
 #define DEBUG 1
@@ -58,6 +58,7 @@ public:
     void dispBanner();
     void sleep();
     void wake();
+    void shuffleSeed();
 
     static void irqRtc();
 

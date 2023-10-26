@@ -21,6 +21,7 @@ void cmdTableInit()
 //    cmd.add("dumplist", cmdDumpPlaylist);
     cmd.add("normal", cmdSetNormal);
     cmd.add("help", cmdHelp);
+    cmd.add("boostenb", cmdBoostEnb);
 }
 
 /************************************************************/
@@ -47,6 +48,25 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in seconds>'"));    
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("normal        - Go into normal (deployment) mode and exit command line mode. Usage: 'normal'"));
+}
+
+/********************************************************************/
+// cmdSetNormal
+/********************************************************************/
+void cmdBoostEnb(int argCnt, char **args)
+{
+    uint8_t enb = cmd.conv(args[1]);
+    
+    if (enb)
+    {
+        digitalWrite(bb.pin5vEnb, HIGH);
+        digitalWrite(bb.pinBoostEnb, HIGH);
+    }
+    else
+    {
+        digitalWrite(bb.pin5vEnb, LOW);
+        digitalWrite(bb.pinBoostEnb, LOW);
+    }
 }
 
 /********************************************************************/

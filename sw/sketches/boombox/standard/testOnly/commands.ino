@@ -22,45 +22,7 @@ void cmdTableInit()
     cmd.add("config", cmdDumpConfig);
     cmd.add("dumplist", cmdDumpPlaylist);
     cmd.add("help", cmdHelp); 
-    cmd.add("ampenb", cmdAmpEnable); 
-    cmd.add("boostenb", cmdBoostEnable); 
 }
-
-/************************************************************/
-
-/************************************************************/
-void cmdAmpEnable(int argCnt, char **args)
-{
-    uint8_t enb = cmd.conv(args[1]);
-
-    if (enb)
-    {
-        digitalWrite(boombox.pinAmpShutdn, HIGH);
-    }
-    else
-    {
-        digitalWrite(boombox.pinAmpShutdn, LOW); 
-    }
-}
-
-
-/************************************************************/
-
-/************************************************************/
-void cmdBoostEnable(int argCnt, char **args)
-{
-    uint8_t enb = cmd.conv(args[1]);
-
-    if (enb)
-    {
-        digitalWrite(boombox.pinBoostEnb, HIGH);
-    }
-    else
-    {
-        digitalWrite(boombox.pinBoostEnb, LOW); 
-    }
-}
-
 
 /************************************************************/
 
@@ -71,6 +33,7 @@ void cmdHelp(int argCnt, char **args)
     (void) args;
         
     Serial.println(F("play          - Play sound. Usage: 'play <sound number>'"));        
+    Serial.println(F("play          - Play sound in folder. Usage: 'play <folder number> <sound number>'"));  
     Serial.println(F("stop          - Stop a sound from playing. Usage: 'stop'")); 
     Serial.println(F("vol           - Set volume. Usage: 'vol <num from 1-30>'"));
     Serial.println(F("pause         - Pause sound playing. Usage: 'pause'"));
@@ -312,16 +275,29 @@ void cmdDumpConfig(int argCnt, char **args)
 void cmdPlay(int argCnt, char **args)
 {
     (void) argCnt;   
-    
-    uint8_t track = cmd.conv(args[1]);
+
+    uint8_t track, folder;
 
     // enable amp
     boombox.ampEnable();       
     delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up    
 
-    // play sound
-    boombox.playBusy(track);
-    
+    if (argCnt == 2)
+    {
+        track = cmd.conv(args[1]);
+        
+        // play sound
+        boombox.playBusy(track);
+    }
+    else if (argCnt == 3)
+    {
+        folder = cmd.conv(args[1]);
+        track = cmd.conv(args[2]);
+        
+        // play sound
+        boombox.playBusyFolder(folder, track);
+    }
+
     // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
     // with additional delay after to allow amp to shut down
     delay(500);

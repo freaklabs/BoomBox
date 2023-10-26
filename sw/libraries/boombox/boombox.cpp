@@ -23,7 +23,7 @@ Boombox::Boombox()
     pinAuxEnb 		= 17;
  	pinAuxData0 	= 4;
     pinAuxData1 	= 10; 
-    pinRandSeed     = A0;    
+    pinMute         = A0;    
 
     _vol           	= 26;
     _delayVal      	= 0;
@@ -44,6 +44,7 @@ void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
     pinMode(SCL, INPUT_PULLUP);    
 
     pinMode(pinAmpShutdn, OUTPUT);
+    pinMode(pinMute, OUTPUT);
     pinMode(pinBoostEnb, OUTPUT);
     pinMode(pinMp3Enb, OUTPUT);
     pinMode(pin5vEnb, OUTPUT);
@@ -57,6 +58,7 @@ void Boombox::begin(SoftwareSerial *sser, Rtc_Pcf8563 *rtc)
     digitalWrite(pinBoostEnb, HIGH);
 
     digitalWrite(pinAmpShutdn, LOW);
+    digitalWrite(pinMute, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pinAuxEnb, LOW);
     digitalWrite(pinAuxData0, LOW);
@@ -262,4 +264,13 @@ bool Boombox::rtcHandleIntp()
 void Boombox::rtcSetTrigger(uint16_t triggerIntv)
 {
     _intv = triggerIntv;
+}
+
+/************************************************************/
+// Random number seed generator for shuffle 
+/************************************************************/
+void Boombox::shuffleSeed()
+{
+    ts_t time = rtcGetTime();
+    randomSeed(time.min * time.sec);
 }

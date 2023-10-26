@@ -22,11 +22,11 @@
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.17"
+#define SKETCH_VERSION "1.19"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
-#define MAX_FIELD_SIZE 50
+#define MAX_FIELD_SIZE 30
 #define AMP_ENABLE_DELAY 500
 #define CMD_MODE_TIME_LIMIT 30
 #define START_WAIT_TIME 5000

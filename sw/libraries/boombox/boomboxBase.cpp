@@ -112,9 +112,15 @@ void BoomboxBase::playBusy(uint8_t file)
 {
     bool done = false;
 
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0X00, 0x00, file , 0xEF };
+    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0x00, 0x00, file, 0xEF };
     _sendCmd(buf, sizeof(buf));
     
+    for (int i=0; i<8; i++)
+    {
+        printf("%02X ", buf[i]);
+    }
+    printf("\n");
+
     digitalWrite(pinAuxLed, HIGH);
     delay(100); // wait for busy pin to go high
 
@@ -125,6 +131,35 @@ void BoomboxBase::playBusy(uint8_t file)
         wdt_reset();
     }
     digitalWrite(pinAuxLed, LOW);
+}
+
+
+/************************************************************/
+//
+/************************************************************/
+void BoomboxBase::playBusyFolder(uint8_t folder, uint8_t file)
+{
+    bool done = false;
+
+    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x0F, 0x00, folder, file, 0xEF };
+    _sendCmd(buf, sizeof(buf));
+
+    for (int i=0; i<8; i++)
+    {
+        printf("%02X ", buf[i]);
+    }
+    printf("\n");
+
+    digitalWrite(pinAuxLed, HIGH);
+    delay(100); // wait for busy pin to go high
+
+    done = digitalRead(pinBusy);
+    while (!done)
+    {
+        done = digitalRead(pinBusy);
+        wdt_reset();
+    }
+    digitalWrite(pinAuxLed, LOW);    
 }
 
 /************************************************************/
@@ -141,24 +176,6 @@ bool BoomboxBase::isBusy()
 void BoomboxBase::setVol(int8_t vol)
 {
     _vol = constrain(vol, 0, 30);
-}
-
-/************************************************************/
-//
-/************************************************************/
-void BoomboxBase::playNext()
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x01, 0x00, 0x00, 0x00, 0xEF };
-    _sendCmd(buf, sizeof(buf));
-}
-
-/************************************************************/
-//
-/************************************************************/
-void BoomboxBase::playPrev()
-{
-    uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x01, 0x00, 0x00, 0x00, 0xEF };
-    _sendCmd(buf, sizeof(buf));
 }
 
 /************************************************************/
@@ -352,6 +369,11 @@ void BoomboxBase::initPlaylist()
         Serial.flush();
         return;
     }
+
+    if (_maxSounds == 0)
+    {
+        return;
+    }    
 
     // create sequential playlist with indices that start from 1
     for (uint8_t i = 0; i<_maxSounds; i++)

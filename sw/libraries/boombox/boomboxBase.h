@@ -43,10 +43,9 @@ public:
     void dispBanner();
 
 
-    void playNext();
-    void playPrev();
     void play(uint8_t file);
     void playBusy(uint8_t file);
+    void playBusyFolder(uint8_t folder, uint8_t file);
     void stop();
     void pause();
     void resume();
