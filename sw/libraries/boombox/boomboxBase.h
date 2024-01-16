@@ -46,6 +46,7 @@ public:
     void play(uint8_t file);
     void playBusy(uint8_t file);
     void playBusyFolder(uint8_t folder, uint8_t file);
+    void dumpHex(uint8_t *data);
     void stop();
     void pause();
     void resume();
@@ -72,11 +73,15 @@ public:
     void reg5vDisable();
 
     void setMaxSounds(uint8_t maxSounds);
-    void shuffleEnable(bool enb);
-    void initPlaylist();
+    void setShuffle(bool enb);
+    void setIndex(uint8_t index);
+    uint8_t getIndex();
+    void setActivePlaylist(uint8_t *playlist);
+    uint8_t *getActivePlaylist();
+    void initPlaylist(uint8_t *playlist, uint8_t maxSounds, bool shuffleEnb);
     void shuffleSeed();
-    void shufflePlaylist();
-    void dumpPlaylist();
+    void shufflePlaylist(uint8_t *playlist, uint8_t maxSounds);
+    void dumpPlaylist(uint8_t *playlist, uint8_t maxSounds);
     uint8_t getNextSound();
 
 private:

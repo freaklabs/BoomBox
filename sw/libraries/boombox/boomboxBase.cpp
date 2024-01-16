@@ -26,7 +26,7 @@ BoomboxBase::BoomboxBase()
     pinPIREnb       = 17;
     pin5vEnb        = 15;
     pinAuxLed       = 13;
-    pinRandSeed         = A0;
+    pinRandSeed     = A0;
     
     intPIR          = 0;
     intAux          = 1;     
@@ -115,11 +115,7 @@ void BoomboxBase::playBusy(uint8_t file)
     uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x03, 0x00, 0x00, file, 0xEF };
     _sendCmd(buf, sizeof(buf));
     
-    for (int i=0; i<8; i++)
-    {
-        printf("%02X ", buf[i]);
-    }
-    printf("\n");
+//    dumpHex(buf); 
 
     digitalWrite(pinAuxLed, HIGH);
     delay(100); // wait for busy pin to go high
@@ -144,11 +140,7 @@ void BoomboxBase::playBusyFolder(uint8_t folder, uint8_t file)
     uint8_t buf[8] = { 0x7E, 0xFF, 0x06, 0x0F, 0x00, folder, file, 0xEF };
     _sendCmd(buf, sizeof(buf));
 
-    for (int i=0; i<8; i++)
-    {
-        printf("%02X ", buf[i]);
-    }
-    printf("\n");
+//    dumpHex(buf); 
 
     digitalWrite(pinAuxLed, HIGH);
     delay(100); // wait for busy pin to go high
@@ -160,6 +152,18 @@ void BoomboxBase::playBusyFolder(uint8_t folder, uint8_t file)
         wdt_reset();
     }
     digitalWrite(pinAuxLed, LOW);    
+}
+
+/************************************************************/
+//
+/************************************************************/
+void BoomboxBase::dumpHex(uint8_t *data)
+{
+    for (int i=0; i<8; i++)
+    {
+        printf("%02X ", data[i]);
+    }
+    printf("\n");
 }
 
 /************************************************************/
@@ -333,8 +337,9 @@ void BoomboxBase::reg5vDisable()
 }
 
 /************************************************************/
-// 
+// Helper function to initialize the playlist
 /************************************************************/
+// set max sounds
 void BoomboxBase::setMaxSounds(uint8_t maxSounds)
 {
     if (maxSounds > MAX_FILES)
@@ -349,41 +354,62 @@ void BoomboxBase::setMaxSounds(uint8_t maxSounds)
     }
 }
 
-/************************************************************/
-// 
-/************************************************************/
-void BoomboxBase::shuffleEnable(bool enb)
+// set shuffle enable
+void BoomboxBase::setShuffle(bool enb)
 {
     _shuffleEnable = enb;
 }
 
-/************************************************************/
-// Helper function to initialize the playlist
-/************************************************************/
-void BoomboxBase::initPlaylist()
+// set index
+void BoomboxBase::setIndex(uint8_t index)
 {
-    _playlist = (uint8_t *)malloc(_maxSounds);
-    if (!_playlist)
+    _index = index;
+}
+
+// get index 
+uint8_t BoomboxBase::getIndex()
+{
+    return _index;
+}
+
+// set active playlist
+void BoomboxBase::setActivePlaylist(uint8_t *playlist)
+{
+    _playlist = playlist;
+}
+
+// set active playlist
+uint8_t *BoomboxBase::getActivePlaylist()
+{
+    return _playlist;
+}
+
+// initialize playlist
+void BoomboxBase::initPlaylist(uint8_t *playlist, uint8_t maxSounds, bool shuffleEnb)
+{        
+    if (!playlist)
     {
         Serial.println(F("ERROR: playlist init failed"));
         Serial.flush();
         return;
     }
 
-    if (_maxSounds == 0)
+    if (maxSounds == 0)
     {
+        Serial.println(F("ERROR: maxSounds is equal to 0"));
         return;
     }    
 
     // create sequential playlist with indices that start from 1
-    for (uint8_t i = 0; i<_maxSounds; i++)
+    for (uint8_t i = 0; i<maxSounds; i++)
     {
-        _playlist[i] = i+1;
+        playlist[i] = i+1;
+        //printf("%d: %d\n", i, playlist[i]);
     }
 
-    if (_shuffleEnable)
+    if (shuffleEnb)
     {
-        shufflePlaylist();
+        shufflePlaylist(playlist, maxSounds);      
     }
 }
 
@@ -407,11 +433,11 @@ void BoomboxBase::shuffleSeed()
 // this should be called once all sounds in playlist have been
 // exhausted
 /************************************************************/
-void BoomboxBase::shufflePlaylist()
+void BoomboxBase::shufflePlaylist(uint8_t *playlist, uint8_t maxSounds)
 {
-    uint16_t i, nvalues = _maxSounds;
+    uint16_t i, nvalues = maxSounds;
 
-    if (!_playlist)
+    if (!playlist)
     {
         Serial.println(F("ERROR: playlist is uninitialized"));
         Serial.flush();
@@ -421,8 +447,10 @@ void BoomboxBase::shufflePlaylist()
     // create sequential playlist with indices that start from 1
     for (i = 0; i<nvalues; i++)
     {
-        _playlist[i] = i+1;
+        playlist[i] = i+1;
     }
+
+    //dumpPlaylist(playlist, maxSounds);
 
     // shuffle playlist
     for(i = 0; i < nvalues-1; i++) 
@@ -430,10 +458,12 @@ void BoomboxBase::shufflePlaylist()
         uint16_t c = random(nvalues-i);
 
         /* swap */
-        uint16_t t = _playlist[i]; 
-        _playlist[i] = _playlist[i+c]; 
-        _playlist[i+c] = t;    
+        uint16_t t = playlist[i]; 
+        playlist[i] = playlist[i+c]; 
+        playlist[i+c] = t;    
     }
+
+    //dumpPlaylist(playlist, maxSounds);
 }
 
 /************************************************************/
@@ -441,11 +471,11 @@ void BoomboxBase::shufflePlaylist()
 // this should be called once all sounds in playlist have been
 // exhausted
 /************************************************************/
-void BoomboxBase::dumpPlaylist()
+void BoomboxBase::dumpPlaylist(uint8_t *playlist, uint8_t maxSounds)
 {
-    for (int i=0; i<_maxSounds; i++)
+    for (int i=0; i<maxSounds; i++)
     {
-        Serial.print(_playlist[i]);
+        Serial.print(playlist[i]);
         Serial.print(", ");
     }
     Serial.println();
@@ -466,7 +496,7 @@ uint8_t BoomboxBase::getNextSound()
 
         if (_shuffleEnable)
         {
-            shufflePlaylist();
+            shufflePlaylist(_playlist, _maxSounds);
         }
     }
 
