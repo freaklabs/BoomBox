@@ -49,8 +49,8 @@ void cmdHelp(int argCnt, char **args)
 void cmdInitPlaylist(int argCnt, char **args)
 {
     (void) argCnt;
-    boombox.initPlaylist();
-    boombox.dumpPlaylist();
+    boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
+    boombox.dumpPlaylist(playlist, meta.maxSounds);
 }
 
 /********************************************************************/
@@ -213,16 +213,26 @@ void cmdSetMode(int argCnt, char **args)
 /************************************************************/
 void cmdSetShuffle(int argCnt, char **args)
 {
-  if (argCnt != 2)
-  {
-    Serial.println("Incorrect number of arguments.");
+    if (argCnt != 2)
+    {
+        Serial.println("Incorrect number of arguments.");
     return;
-  }
+    }
+    
+    bool shuffleEnb = cmd.conv(args[1]);
+    EEPROM.get(EEPROM_META_LOC, meta);
+    meta.shuffleEnable = shuffleEnb;
+    EEPROM.put(EEPROM_META_LOC, meta);
 
-  bool shuffleEnb = cmd.conv(args[1]);
-  EEPROM.get(EEPROM_META_LOC, meta);
-  meta.shuffleEnable = shuffleEnb;
-  EEPROM.put(EEPROM_META_LOC, meta);
+    if (meta.shuffleEnable == 0)
+    {
+        boombox.setShuffle(0);
+    }
+    else
+    {
+        boombox.setShuffle(1);
+    }
+    boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);  
 }
 
 /**************************************************************************/

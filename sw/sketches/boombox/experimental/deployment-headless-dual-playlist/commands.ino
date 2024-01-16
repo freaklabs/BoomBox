@@ -314,7 +314,7 @@ void cmdSetShuffle(int argCnt, char **args)
     EEPROM.get(EEPROM_META_LOC, meta);
     if (list == 1)
     {
-        meta.list1.shuffleEnb= shuffleEnb; 
+        meta.list1.shuffleEnb = shuffleEnb; 
     }
     else if (list == 2)
     {

@@ -214,7 +214,7 @@ void cmdDumpPlaylist(int argCnt, char **args)
     (void) argCnt;
     (void) args;
 
-    boombox.dumpPlaylist();
+    boombox.dumpPlaylist(playlist, meta.maxSounds);
 }
 
 /**************************************************************************/
@@ -377,14 +377,13 @@ void cmdSetShuffle(int argCnt, char **args)
 
   if (meta.shuffleEnable == 0)
   {
-    boombox.shuffleEnable(0);
-    boombox.initPlaylist();
+    boombox.setShuffle(0);
   }
   else
   {
-    boombox.shuffleEnable(1);
-    boombox.shufflePlaylist();
+    boombox.setShuffle(1);
   }
+  boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
 }
 
 /**************************************************************************/

@@ -58,7 +58,7 @@ interrupt received. min = 27.
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.19"
+#define SKETCH_VERSION "1.21"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
@@ -69,11 +69,13 @@ interrupt received. min = 27.
 #define ONE_MINUTE 60000
 #define NUM_PLAYLISTS 2
 #define MAX_SOUNDS 50
+#define STRUCT_VERSION 6
 
 SoftwareSerial ss(9, 8);
 
 typedef struct
 {
+    char structVer;
     char devName[MAX_FIELD_SIZE];
     uint8_t devID;
     uint8_t maxSounds;
@@ -96,9 +98,7 @@ uint32_t cmdModeTimeCnt;
 uint32_t cmdModeTimeLimit = CMD_MODE_TIME_LIMIT * ONE_MINUTE;
 
 // playlist management
-uint8_t currentPlaylist = 0;
-uint8_t *playlist[NUM_PLAYLISTS];
-uint8_t index = 0;
+uint8_t *playlist;
 
 /************************************************************/
 // setup
@@ -111,16 +111,18 @@ void setup()
     
     // initialize command line
     cmd.begin(57600);
+    cmdTableInit(); 
 
     // get metadata
     EEPROM.get(EEPROM_META_LOC, meta);
-    if (meta.devID == 0xFF)
+    if ((meta.devID == 0xFF) || (meta.structVer != STRUCT_VERSION))
     {
         // EEPROM uninitialized. initialize metadata
         Serial.println(F("EEPROM uninitialized. Installing default configuration settings."));
         Serial.println(F("Reset when finished."));
         memset(meta.devName, 0, sizeof(meta.devName));
         memcpy(meta.devName, "TEST", strlen("TEST"));
+        meta.structVer = STRUCT_VERSION;
         meta.devID = 0;
         meta.shuffleEnable = 0;
         meta.devMode = 0;    
@@ -160,28 +162,28 @@ void setup()
     Serial.print(F("Boombox Deployment Hourly Playback Sketch version: "));
     Serial.println(F(SKETCH_VERSION));
     Serial.println(F("Designed by FreakLabs")); 
-    Serial.println(F("-------------------------------------------"));
-
-#if (BOOMBOX == 1)
     printf_P(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  
-#else
-    printf_P(PSTR("Current time is unavailable.\n"), boombox.rtcPrintTimeAndDate()); 
-#endif
+    Serial.println(F("-------------------------------------------"));     
     
-    // set maximum sounds based on metadata   
-    boombox.setMaxSounds(meta.maxSounds);      
-    cmdTableInit();  
-    
+    // setup boombox configuration
+    // set max sounds, set the playlist to be active, then initialize playlist
+    boombox.setMaxSounds(meta.maxSounds);
+    if ((playlist = (uint8_t *)malloc(meta.maxSounds)) == NULL)
+    {
+        Serial.println(F("No memoryto initialize playlist!!!"));
+        while(1); // stay here forever!
+    }
+    boombox.setActivePlaylist(playlist);
+    boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
+
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
     if (meta.shuffleEnable == 1)
     {
-        boombox.shuffleSeed();
-        boombox.shuffleEnable(true);
+        ts_t currentTime = boombox.rtcGetTime();
+        randomSeed(currentTime.sec);
+        boombox.setShuffle(true);
     } 
-
-    // create the initial playlist
-    boombox.initPlaylist();  
 
     // enable the watchdog timer for 8 seconds
     wdt_enable(WDTO_8S);
@@ -201,9 +203,10 @@ void loop()
     uint8_t nextSound;
     
     wdt_reset();
+    
     if (normalMode)
     {        
-        if (boombox.rtcIntpRcvd())
+        if (boombox.rtcIntpRcvd() || boombox.isAuxEvent())
         {            
             ts_t time = boombox.rtcGetTime();
             printf("interrupt received. min = %d.\n", time.min);
@@ -246,6 +249,10 @@ void loop()
             
             // minute counter interrupt
             boombox.rtcClearIntp(); 
+
+            // clear interrupt flag
+            boombox.clearAuxFlag(); 
+            
             Serial.flush();                              
         }
 

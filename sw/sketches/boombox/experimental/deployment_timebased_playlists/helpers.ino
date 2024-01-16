@@ -63,107 +63,38 @@ char *rtcPrintTimeAndDate()
 
 
 #if (BOOMBOX == 1)
-
-/************************************************************/
-// Create playlist
-/************************************************************/
-void createPlaylist(uint8_t numSounds, bool shuffleEnb, uint8_t hour, uint8_t min)
-{
-    uint16_t eepromLoc;
-    
-    playlist_t *playlist = (playlist_t *)malloc(sizeof(playlist_t));
-    if (!playlist)
-    {
-        println(F("ERROR - createPlaylist: could not allocate memory for playlist."));
-        return;
-    }
-
-    // allocate memory for playlist numbers    
-    playlist->index = meta.numPlaylists;
-    playlist->size = numSounds;
-    playlist->shuffleEnb = shuffle;
-    playlist->activeTime.hour = hour;
-    playlist->activeTime.min = min;
-
-    // calcualte address this playlist struct will reside in EEPROM
-    eepromLoc = (meta.index * sizeof(playlist_t)) + EEPROM_PLAYLIST_LOC;
-
-    // update numPlaylists in EEPROM
-    meta.numPlaylists++;
-    EEPROM.put(EEPROM_META_LOC, meta);
-
-    // store playlist in eeprom
-    EEPROM.put(eepromLoc, playlist);
-}
-
-/************************************************************/
-// Display playlist stored in EEPROM
-/************************************************************/
-void dumpPlaylist(uint8_t index)
-{
-    uint16_t eepromLoc = (index * sizeof(playlist_t)) + EEPROM_PLAYLIST_LOC;
-    playlist_t playlist;
-    EEPROM.get(eepromLoc, playlist);
-
-    printf_P(PSTR("Playlist %d:\n", index));
-    printf_P(PSTR("Size: %d\n"), playlist->size);
-    printf_P(PSTR("Shuffle: %s\n"), playlist->shuffleEnb ? "TRUE" : "FALSE");
-    printf_P(PSTR("Active Time: %02d:%02d\n"), playlist->activeTime.hour, activeTime.min);
-    printf_P(PSTR("Sound list sequence: \n"));
-    if (!playlist->list)
-    {
-        printf_P(PSTR("Playlist sound list memory not allocated.\n"));
-        return;
-    }
-    
-    for (uint16_t i=0; i<playlist->size; i++)
-    {
-        printf_P(PSTR("%2d, "), playlist->list[i]); 
-    }
-    printf_P(PSTR("\n"));    
-}
-
 /************************************************************/
 // Helper function to initialize the playlist
 /************************************************************/
-void initPlaylist(playlist_t *playlist)
+void initPlaylists()
 {
-    if (!playlist)
+    for (int i=0; i<NUM_PLAYLISTS; i++)
     {
-        println(F("ERROR - initPlaylist: No playlist found."));
-        return;
-    }
-
-    // allocate memory for playlist
-    playlist->list = (uint8_t *)malloc(playlist->size);
-    if (!(playlist->list))
-    {
-        println(F("ERROR - initPlaylist: could not allocate memory for sound list."));
-        return;
-    }
-    
-    // create sequential playlist with indices that start from 1
-    for (uint8_t i = 0; i<playlist->size; i++)
-    {
-        playlist->list[i] = i+1;
-    }
+        playlist[i] = (uint8_t *)malloc(meta.numSounds[i]);    
+        if (!playlist[i])
+        {
+            Serial.println(F("ERROR: playlist init failed"));
+            Serial.flush();
+            return;
+        }
+    }    
 
     // create sequential playlist with indices that start from 1
-    for (uint8_t i = 0; i<playlist[0].size; i++)
+    for (uint8_t i = 0; i<meta.numSounds[0]; i++)
     {
-        playlist[0].list[i] = i+1;
+        playlist[0][i] = i+1;
     }
 
-    for (uint8_t i = 0; i<playlist[1].size; i++)
+    for (uint8_t i = 0; i<meta.numSounds[1]; i++)
     {
-        playlist[1].list[i] = meta.numSounds[0]+i+1;
+        playlist[1][i] = meta.numSounds[0]+i+1;
     } 
 
     if (meta.shuffleEnable)
     {
         for (int i=0; i<NUM_PLAYLISTS; i++)
         {   
-            shufflePlaylist(playlist[i]);
+            shufflePlaylist(i);
         }
     }
 }
@@ -171,15 +102,18 @@ void initPlaylist(playlist_t *playlist)
 /************************************************************/
 // Shuffle playlist
 /************************************************************/
-void shufflePlaylist(playlist_t *playlist)
+void shufflePlaylist(uint8_t listNum)
 {
     uint16_t i, nvalues, startIndex;
     uint8_t *list = NULL;
 
-    // check for null playlist
-    if (!playList) return;
+    if (listNum > NUM_PLAYLISTS-1)
+    {
+        Serial.println(F("Exceeded max playlists."));
+        return;
+    }
 
-    nvalues = playlist->size;
+    nvalues = meta.numSounds[listNum];
     startIndex = listNum ? meta.numSounds[0] : 0;
     list = playlist[listNum];
 

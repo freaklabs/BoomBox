@@ -47,6 +47,22 @@ ts_t rtcGetTime()
 #endif  
 
 /**************************************************************************/
+// 
+/**************************************************************************/
+char *rtcPrintTimeAndDate()
+{
+#if (BOOMBOX == 1)  
+    ts_t time = rtcGetTime();
+    memset(bufTime, 0, sizeof(bufTime));
+    sprintf(bufTime, "%04d/%02d/%02d %02d:%02d:%02d", time.year, time.mon, time.mday, time.hour, time.min, time.sec);
+#else
+    sprintf(bufTime, "<unavailable>");
+#endif    
+    return bufTime;
+}
+
+
+/**************************************************************************/
 /*!
     Concatenate multiple strings from the command line starting from the
     given index into one long string separated by spaces.
@@ -93,7 +109,7 @@ uint32_t elapsedTime(uint32_t startTime)
 /**************************************************************************/
 // This is to implement the printf function from within arduino
 /**************************************************************************/
-int uart_putchar (char c, FILE *stream)
+int uart_putchar(char c, FILE *stream)
 {
     (void) stream;
     Serial.write(c);

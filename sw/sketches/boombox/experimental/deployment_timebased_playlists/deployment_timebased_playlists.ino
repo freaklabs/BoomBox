@@ -62,11 +62,10 @@ This will inform you which playlist is active at 3:15 am based on your settings.
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.18"
+#define SKETCH_VERSION "1.21"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
-#define EEPROM_PLAYLIST_LOC 100
 #define MAX_FIELD_SIZE 30
 #define AMP_ENABLE_DELAY 500
 #define CMD_MODE_TIME_LIMIT 30
@@ -74,20 +73,13 @@ This will inform you which playlist is active at 3:15 am based on your settings.
 #define ONE_MINUTE 60000
 #define NUM_PLAYLISTS 2
 #define MAX_SOUNDS 50
+#define STRUCT_VERSION 7
 
 SoftwareSerial ss(9, 8);
 
 typedef struct
 {
-    uint16_t index;
-    uint8_t *list;
-    uint8_t size;
-    bool shuffleEnb;
-    ts_t activeTime;
-} playlist_t;
-
-typedef struct
-{
+    char structVer;
     char devName[MAX_FIELD_SIZE];
     uint8_t devID;
     uint8_t shuffleEnable;
@@ -95,7 +87,8 @@ typedef struct
     uint16_t devInterval;
     uint16_t delayTime;
     uint16_t offDelayTime;
-    uint8_t numPlaylists;
+    ts_t playListTime[NUM_PLAYLISTS];
+    uint8_t numSounds[NUM_PLAYLISTS];
 } meta_t;
 meta_t meta;
 
@@ -111,7 +104,7 @@ uint32_t cmdModeTimeLimit = CMD_MODE_TIME_LIMIT * ONE_MINUTE;
 
 // playlist management
 uint8_t currentPlaylist = 0;
-playlist_t playlist[NUM_PLAYLISTS];
+uint8_t *playlist[NUM_PLAYLISTS];
 uint8_t index = 0;
 
 /************************************************************/
@@ -152,7 +145,12 @@ void setup()
         meta.devInterval = 255;
         meta.delayTime = 0;
         meta.offDelayTime= 0;
-        meta.numPlaylists = 0;
+        meta.playListTime[0].hour = 0;
+        meta.playListTime[0].min = 0;
+        meta.playListTime[1].hour = 0;
+        meta.playListTime[1].min = 0;
+        meta.numSounds[0] = 5;
+        meta.numSounds[0] = 5;
         EEPROM.put(EEPROM_META_LOC, meta);
         while (1)
         {
@@ -186,27 +184,24 @@ void setup()
     Serial.print(F("Boombox Deployment Timebased Playlist Sketch version: "));
     Serial.println(F(SKETCH_VERSION));
     Serial.println(F("Designed by FreakLabs"));
-    printf("Current time is %s.\n", rtcPrintTimeAndDate());  
+    printf("Current time is %s.\n", boombox.rtcPrintTimeAndDate());  
     Serial.println(F("-------------------------------------------"));
-
-#if (BOOMBOX == 1)
-    printf_P(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  
-#else
-    printf_P(PSTR("Current time is unavailable.\n"), boombox.rtcPrintTimeAndDate()); 
-#endif
     
     // set maximum sounds based on metadata    
     cmdTableInit();  
     
+    // create the initial playlist
+    initPlaylists();  
+    boombox.setActivePlaylist(currentPlaylist);
+
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
     if (meta.shuffleEnable == 1)
     {
-        boombox.shuffleSeed();
+        ts_t currentTime = boombox.rtcGetTime();
+        randomSeed(currentTime.sec);
+        boombox.setShuffle(true);
     } 
-
-    // create the initial playlist
-    initPlaylists();  
 
     // enable the watchdog timer for 8 seconds
     wdt_enable(WDTO_8S);
@@ -236,7 +231,8 @@ void loop()
             // check which playlist we will use. 
             uint8_t hr = rtc.getHour();
             uint8_t min = rtc.getMinute();
-            listNum = playlistChooser(hr, min);            
+            listNum = playlistChooser(hr, min);          
+            boombox.setActivePlaylist(listNum);  
             printf_P(PSTR("Using playlist %d.\n"), listNum);        
                 
             // delay for delayTime milliseconds after trigger has happened. 
