@@ -21,7 +21,7 @@
 #endif
 
 #define TESTONLY 0
-#define SKETCH_VERSION "1.21"
+#define SKETCH_VERSION "1.22"
 
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 30
