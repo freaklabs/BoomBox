@@ -21,7 +21,7 @@
 #endif
 
 #define TESTONLY 0
-#define SKETCH_VERSION "1.18"
+#define SKETCH_VERSION "1.21"
 
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 30
@@ -29,11 +29,13 @@
 #define CMD_MODE_TIME_LIMIT 30
 #define START_WAIT_TIME 5000
 #define ONE_MINUTE 60000
+#define STRUCT_VERSION 1
 
 SoftwareSerial ss(9, 8);
 
 typedef struct
 {
+    char structVer;
     char devName[MAX_FIELD_SIZE];
     uint8_t devID;
     uint8_t maxSounds;
@@ -54,6 +56,7 @@ uint8_t timeCount = 0;
 uint32_t now;
 uint32_t cmdModeTimeCnt;
 uint32_t cmdModeTimeLimit = CMD_MODE_TIME_LIMIT * ONE_MINUTE;
+uint8_t *playlist;
 
 /************************************************************/
 // setup
@@ -70,13 +73,14 @@ void setup()
 
     // get metadata
     EEPROM.get(EEPROM_META_LOC, meta);
-    if (meta.devID == 0xFF)
+    if ((meta.devID == 0xFF) || (meta.structVer != STRUCT_VERSION))
     {
         // EEPROM uninitialized. initialize metadata
         Serial.println(F("EEPROM uninitialized. Installing default configuration settings."));
         Serial.println(F("Reset when finished."));
         memset(meta.devName, 0, sizeof(meta.devName));
         memcpy(meta.devName, "TEST", strlen("TEST"));
+        meta.structVer = STRUCT_VERSION;
         meta.devID = 0;
         meta.maxSounds = 5;
         meta.shuffleEnable = 0;
@@ -110,9 +114,7 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
-
-    // set maximum sounds based on metadata
-    boombox.setMaxSounds(meta.maxSounds);
+    digitalWrite(boombox.pinMute, LOW); // mute system
 
     // display banner for version and diagnostic info
     boombox.dispBanner();
@@ -122,17 +124,35 @@ void setup()
     printf("Current time is %s.\n", rtcPrintTimeAndDate());  
     Serial.println(F("-------------------------------------------"));
     
+    // setup boombox configuration
+    // set max sounds, set the playlist to be active, then initialize playlist
+    boombox.setMaxSounds(meta.maxSounds);
+    if ((playlist = (uint8_t *)malloc(meta.maxSounds)) == NULL)
+    {
+        Serial.println(F("No memoryto initialize playlist!!!"));
+        while(1); // stay here forever!
+    }
+    boombox.setActivePlaylist(playlist);
+    boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
+
+#if (BOOMBOX == 1) 
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
     if (meta.shuffleEnable == 1)
     {
-        boombox.shuffleSeed();
-        boombox.shuffleEnable(true);
+        ts_t currentTime = boombox.rtcGetTime();
+        randomSeed(currentTime.sec);
+        boombox.setShuffle(true);
     } 
-
-    // create the initial playlist
-    boombox.initPlaylist();  
-
+#else
+    if (meta.shuffleEnable == 1)
+    {
+        boombox.shuffleSeed();
+    }
+#endif // BOOMBOX
+    // clear interrupt flag if it is set
+    boombox.clearAuxFlag(); 
+   
     // select if we want to go into developer mode or deployment mode
     selectMode();             
 }
@@ -167,9 +187,14 @@ void loop()
             // enable amp
             boombox.ampEnable();       
             delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+            digitalWrite(boombox.pinMute, HIGH);
 
             // play sound based on randomized playlist
             boombox.playBusy(nextSound);    
+
+            // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+            // with additional delay after to allow amp to shut down
+            digitalWrite(boombox.pinMute, LOW); 
 
             // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
             // with additional delay after to allow amp to shut down

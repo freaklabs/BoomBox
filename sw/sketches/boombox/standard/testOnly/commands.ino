@@ -60,7 +60,7 @@ void cmdDumpPlaylist(int argCnt, char **args)
     (void) argCnt;
     (void) args;
 
-    boombox.dumpPlaylist();
+    boombox.dumpPlaylist(playlist, meta.maxSounds);
 }
 
 /**************************************************************************/
@@ -68,10 +68,10 @@ void cmdDumpPlaylist(int argCnt, char **args)
 /**************************************************************************/
 void cmdSetDateTime(int argCnt, char **args)
 {
-#if (BOOMBOX == 1)    
     (void) argCnt;
     (void) args;
-        
+    
+#if ((BOOMBOX == 1) || defined(ARDUINO_ARCH_MEGAAVR))   
     uint8_t day, mon, year, hr, min, sec;
 
     year = strtol(args[1], NULL, 10);
@@ -91,7 +91,7 @@ void cmdSetDateTime(int argCnt, char **args)
 /**************************************************************************/
 void cmdGetDateTime(int argCnt, char **args)
 {
-#if (BOOMBOX == 1)    
+#if ((BOOMBOX == 1) || defined(ARDUINO_ARCH_MEGAAVR))  
     (void) argCnt;
     (void) args;
         
@@ -223,14 +223,13 @@ void cmdSetShuffle(int argCnt, char **args)
 
   if (meta.shuffleEnable == 0)
   {
-    boombox.shuffleEnable(0);
-    boombox.initPlaylist();
+    boombox.setShuffle(0);
   }
   else
   {
-    boombox.shuffleEnable(1);
-    boombox.shufflePlaylist();
+    boombox.setShuffle(1);
   }
+  boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
 }
 
 /************************************************************/
@@ -281,7 +280,8 @@ void cmdPlay(int argCnt, char **args)
     // enable amp
     boombox.ampEnable();       
     delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up    
-
+    digitalWrite(boombox.pinMute, HIGH);   
+    
     if (argCnt == 2)
     {
         track = cmd.conv(args[1]);
@@ -300,6 +300,7 @@ void cmdPlay(int argCnt, char **args)
 
     // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
     // with additional delay after to allow amp to shut down
+    digitalWrite(boombox.pinMute, LOW);
     delay(500);
     boombox.ampDisable();           
 }
@@ -362,7 +363,6 @@ void cmdSleep(int argCnt, char **args)
     (void) argCnt;
     (void) args;
     
-    ss.end();
 //    pinMode(9, INPUT);
 //    pinMode(8, INPUT);
     digitalWrite(boombox.pinBoostEnb, LOW);
@@ -375,6 +375,5 @@ void cmdSleep(int argCnt, char **args)
     // ie: button push or motion event
     boombox.wake();
     boombox.ampEnable();
-    ss.begin(9600);
     delay(500);
 }

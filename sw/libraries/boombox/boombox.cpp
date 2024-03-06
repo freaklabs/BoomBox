@@ -127,13 +127,19 @@ void Boombox::sleep()
     delay(300);
     digitalWrite(pin5vEnb, LOW);
 
+#ifndef ARDUINO_ARCH_MEGAAVR   
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
+#endif
 }
 
 /*----------------------------------------------------------*/
 void Boombox::wake()
 {
+#ifdef ARDUINO_ARCH_MEGAAVR   
+    wdt_enable(WDT_PERIOD_8KCLK_gc); 
+#else
     wdt_enable(WDTO_8S);
+#endif
 
     // turn on 5V supply and allow voltage to stabilize
     // power sequence to avoid spike

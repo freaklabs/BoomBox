@@ -3,7 +3,7 @@
 //    
 //    
 /************************************************************************/
-#if (BOOMBOX == 1)
+#if ((BOOMBOX == 1) || defined(ARDUINO_ARCH_MEGAAVR))
 ts_t rtcGetTime()
 {
     ts_t time;
@@ -25,7 +25,8 @@ ts_t rtcGetTime()
 /**************************************************************************/
 char *rtcPrintTimeAndDate()
 {
-#if (BOOMBOX == 1)  
+#if ((BOOMBOX == 1) || defined(ARDUINO_ARCH_MEGAAVR))
+ 
     ts_t time = rtcGetTime();
     memset(bufTime, 0, sizeof(bufTime));
     sprintf(bufTime, "%04d/%02d/%02d %02d:%02d:%02d", time.year, time.mon, time.mday, time.hour, time.min, time.sec);

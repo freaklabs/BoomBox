@@ -27,6 +27,7 @@ BoomboxBase::BoomboxBase()
     pin5vEnb        = 15;
     pinAuxLed       = 13;
     pinRandSeed     = A0;
+    pinMute         = 13;
     
     intPIR          = 0;
     intAux          = 1;     
@@ -43,12 +44,14 @@ BoomboxBase::BoomboxBase()
     pinMode(pinMp3Enb, OUTPUT);
     pinMode(pin5vEnb, OUTPUT);
     pinMode(pinAuxLed, OUTPUT);
+    pinMode(pinMute, OUTPUT);
 
     digitalWrite(pinBoostEnb, LOW);
     digitalWrite(pinAmpShutdn, HIGH);
     digitalWrite(pinMp3Enb, HIGH);
     digitalWrite(pin5vEnb, LOW);
     digitalWrite(pinAuxLed, LOW);
+    digitalWrite(pinMute, LOW);
 
     attachInterrupt(intAux, BoomboxBase::irqAux, RISING);
 }
@@ -63,7 +66,12 @@ void BoomboxBase::begin(SoftwareSerial *sser)
     ss = sser;
     ss->begin(9600);
 
+#ifdef ARDUINO_ARCH_MEGAAVR   
+    wdt_enable(WDT_PERIOD_8KCLK_gc); 
+#else
     wdt_enable(WDTO_8S);
+#endif
+    
     delay(100);
     setVol(_vol);
 }
@@ -128,7 +136,6 @@ void BoomboxBase::playBusy(uint8_t file)
     }
     digitalWrite(pinAuxLed, LOW);
 }
-
 
 /************************************************************/
 //
@@ -281,7 +288,9 @@ void BoomboxBase::sleep()
     digitalWrite(pin5vEnb, LOW);
     wdt_disable();
 
+#ifndef ARDUINO_ARCH_MEGAAVR   
     LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_ON);
+#endif
 }
 
 /************************************************************/
@@ -289,7 +298,11 @@ void BoomboxBase::sleep()
 /************************************************************/
 void BoomboxBase::wake()
 {
+#ifdef ARDUINO_ARCH_MEGAAVR   
+    wdt_enable(WDT_PERIOD_8KCLK_gc); 
+#else
     wdt_enable(WDTO_8S);
+#endif
     
     // turn on 5V supply and allow voltage to stabilize
     digitalWrite(pin5vEnb, HIGH);
@@ -334,6 +347,22 @@ void BoomboxBase::reg5vEnable()
 void BoomboxBase::reg5vDisable()
 {
     digitalWrite(pin5vEnb, LOW);    
+}
+
+/************************************************************/
+//
+/************************************************************/
+void BoomboxBase::muteEnable()
+{
+    digitalWrite(pinMute, LOW);
+}
+
+/************************************************************/
+//
+/************************************************************/
+void BoomboxBase::muteDisable()
+{
+    digitalWrite(pinMute, HIGH);
 }
 
 /************************************************************/

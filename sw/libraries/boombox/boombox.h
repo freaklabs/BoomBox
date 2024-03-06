@@ -2,9 +2,12 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
-#include <LowPower.h>
 #include <SoftwareSerial.h>
 #include <Rtc_Pcf8563.h>
+
+#ifndef ARDUINO_ARCH_MEGAAVR   
+    #include <LowPower.h>
+#endif
 
 #undef BOARD_VERSION
 #define BOARD_VERSION "v1.0+"
@@ -40,12 +43,11 @@ typedef struct
 class Boombox : public BoomboxBase
 {
 public:
-    uint8_t pinAuxEnb = 17;
-    uint8_t pinAuxData0 = 4;
-    uint8_t pinAuxData1 = 10;
-    uint8_t pinMute = A0;
-    uint8_t intNumRtc = 0;
-    uint8_t intNumAux = 1;
+    uint8_t pinAuxEnb;
+    uint8_t pinAuxData0;
+    uint8_t pinAuxData1;
+    uint8_t intNumRtc;
+    uint8_t intNumAux;
 
     uint16_t _intv;
     uint16_t _minuteCnt;

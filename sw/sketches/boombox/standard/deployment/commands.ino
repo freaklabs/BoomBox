@@ -5,8 +5,6 @@ void cmdTableInit()
 {
     cmd.add("play", cmdPlay);
     cmd.add("stop", cmdStop);
-//    cmd.add("vol", cmdSetVolume);
-    cmd.add("sleep", cmdSleep);
     cmd.add("settime", cmdSetDateTime);
     cmd.add("gettime", cmdGetDateTime);     
     cmd.add("setname", cmdSetName);
@@ -14,14 +12,11 @@ void cmdTableInit()
     cmd.add("setmode", cmdSetMode);
     cmd.add("setmaxsounds", cmdSetMaxSounds);
     cmd.add("setshuffle", cmdSetShuffle);
-    cmd.add("setinterval", cmdSetInterval);
     cmd.add("setdelay", cmdSetDelay);
     cmd.add("setoffdelay", cmdSetOffDelay);
     cmd.add("config", cmdDumpConfig);
-//    cmd.add("dumplist", cmdDumpPlaylist);
     cmd.add("normal", cmdSetNormal);
     cmd.add("help", cmdHelp);
-    cmd.add("boostenb", cmdBoostEnb);
 }
 
 /************************************************************/
@@ -35,9 +30,6 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("play          - Play sound. Usage: 'play <sound number>'"));        
     Serial.println(F("stop          - Stop a sound from playing. Usage: 'stop'")); 
     Serial.println(F("vol           - Set volume. Usage: 'vol <num from 1-30>'"));
-    Serial.println(F("pause         - Pause sound playing. Usage: 'pause'"));
-    Serial.println(F("resume        - Resume sound playing. Usage: 'resume'"));
-    Serial.println(F("sleep         - Go into sleep mode. Need to reset to exit sleep mode. Usage: 'sleep'"));
     Serial.println(F("setname       - Set name. Usage: 'setname <name>'"));
     Serial.println(F("setid         - Set boombox ID. Usage: 'setid <num from 0-255>'"));
     Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));
@@ -53,25 +45,6 @@ void cmdHelp(int argCnt, char **args)
 /********************************************************************/
 // cmdSetNormal
 /********************************************************************/
-void cmdBoostEnb(int argCnt, char **args)
-{
-    uint8_t enb = cmd.conv(args[1]);
-    
-    if (enb)
-    {
-        digitalWrite(bb.pin5vEnb, HIGH);
-        digitalWrite(bb.pinBoostEnb, HIGH);
-    }
-    else
-    {
-        digitalWrite(bb.pin5vEnb, LOW);
-        digitalWrite(bb.pinBoostEnb, LOW);
-    }
-}
-
-/********************************************************************/
-// cmdSetNormal
-/********************************************************************/
 void cmdSetNormal(int argCnt, char **args)
 {
     (void) argCnt;
@@ -80,17 +53,6 @@ void cmdSetNormal(int argCnt, char **args)
     normalMode = true;   
     Serial.println("Going into normal operation mode.");
     Serial.flush();     
-}
-
-/************************************************************/
-//
-/************************************************************/
-void cmdDumpPlaylist(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-
-    boombox.dumpPlaylist();
 }
 
 /**************************************************************************/
@@ -253,31 +215,13 @@ void cmdSetShuffle(int argCnt, char **args)
 
   if (meta.shuffleEnable == 0)
   {
-    boombox.shuffleEnable(0);
-    boombox.initPlaylist();
+    boombox.setShuffle(0);
   }
   else
   {
-    boombox.shuffleEnable(1);
-    boombox.shufflePlaylist();
+    boombox.setShuffle(1);
   }
-}
-
-/************************************************************/
-//
-/************************************************************/
-void cmdSetInterval(int argCnt, char **args)
-{
-    if (argCnt != 2)
-    {
-        Serial.println("Incorrect number of arguments.");
-        return;
-    }
-    
-    int16_t interval = cmd.conv(args[1]);
-    EEPROM.get(EEPROM_META_LOC, meta);
-    meta.devInterval = interval;
-    EEPROM.put(EEPROM_META_LOC, meta);
+  boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
 }
 
 /**************************************************************************/
@@ -338,28 +282,6 @@ void cmdSetVolume(int argCnt, char **args)
 }
 
 /************************************************************/
-// Pause playing
-/************************************************************/
-void cmdPause(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-    
-    boombox.pause();
-}
-
-/************************************************************/
-// Resume playing
-/************************************************************/
-void cmdResume(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-    
-    boombox.resume();
-}
-
-/************************************************************/
 // Stop playing
 /************************************************************/
 void cmdStop(int argCnt, char **args)
@@ -368,23 +290,4 @@ void cmdStop(int argCnt, char **args)
     (void) args;
         
     boombox.stop();
-}
-
-/************************************************************/
-// Go into hibernation mode
-/************************************************************/
-void cmdSleep(int argCnt, char **args)
-{
-    (void) argCnt;
-    (void) args;
-    
-    boombox.ampDisable();
-    boombox.sleep();
-
-    // need to wake up if you sleep.
-    // can only wake up from external interrupt,
-    // ie: button push or motion event
-    boombox.wake();
-    boombox.ampEnable();
-    delay(500);
 }

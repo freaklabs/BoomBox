@@ -3,8 +3,11 @@
 #include <avr/sleep.h>
 #include <avr/power.h>
 #include <avr/wdt.h>
-#include <LowPower.h>
 #include <SoftwareSerial.h>
+
+#ifndef ARDUINO_ARCH_MEGAAVR   
+    #include <LowPower.h>
+#endif
 
 #define MAX_FILES 200
 #define BOARD_VERSION "v0.6"
@@ -16,6 +19,7 @@ public:
     uint8_t pinButton;
     uint8_t pinBusy;
     uint8_t pinRandSeed;
+    uint8_t pinMute;
 
     uint8_t pinAmpShutdn;
     uint8_t pinBoostEnb;
@@ -46,11 +50,11 @@ public:
     void play(uint8_t file);
     void playBusy(uint8_t file);
     void playBusyFolder(uint8_t folder, uint8_t file);
-    void dumpHex(uint8_t *data);
     void stop();
     void pause();
     void resume();
     void setVol(int8_t vol);
+    void dumpHex(uint8_t *data);
 
     void buttonInit();
 
@@ -71,6 +75,8 @@ public:
     void ampDisable();
     void reg5vEnable();
     void reg5vDisable();
+    void muteEnable();
+    void muteDisable();
 
     void setMaxSounds(uint8_t maxSounds);
     void setShuffle(bool enb);
@@ -84,8 +90,7 @@ public:
     void dumpPlaylist(uint8_t *playlist, uint8_t maxSounds);
     uint8_t getNextSound();
 
-private:
-    void _sendCmd(uint8_t *, uint8_t);
+    virtual void _sendCmd(uint8_t *, uint8_t);
 
 };
 
