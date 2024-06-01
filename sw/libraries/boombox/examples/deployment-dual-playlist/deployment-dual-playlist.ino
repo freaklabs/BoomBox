@@ -131,6 +131,7 @@ void setup()
 
     // disable amplifier to save power
     boombox.ampDisable();       // disable amplifier 
+    digitalWrite(boombox.pinMute, LOW); // mute output
     
     // display banner for version and diagnostic info
     boombox.dispBanner();
