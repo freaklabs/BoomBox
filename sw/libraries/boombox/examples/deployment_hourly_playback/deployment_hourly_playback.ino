@@ -58,7 +58,7 @@ interrupt received. min = 27.
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.19"
+#define SKETCH_VERSION "1.23"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
@@ -154,6 +154,8 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
+    digitalWrite(boombox.pinMute, LOW); // mute output
+
 
     // display banner for version and diagnostic info
     boombox.dispBanner();
@@ -223,17 +225,22 @@ void loop()
                   
                 // retrieve next sound index
                 nextSound = boombox.getNextSound();  
-        
+
                 // enable amp
-                boombox.ampEnable();
+                boombox.ampEnable();       
                 delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
-        
+                digitalWrite(boombox.pinMute, HIGH);    
+
                 // play sound based on randomized playlist
                 boombox.playBusy(nextSound);    
     
-                // disable amp before going to sleep
-                boombox.ampDisable();     
                         
+                // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+                // with additional delay after to allow amp to shut down
+                digitalWrite(boombox.pinMute, LOW); 
+                delay(500);
+                boombox.ampDisable();      
+
                 // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
                 // to be triggered.
                 now = millis();

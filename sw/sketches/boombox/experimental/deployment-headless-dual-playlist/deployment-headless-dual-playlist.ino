@@ -20,7 +20,7 @@
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.21"
+#define SKETCH_VERSION "1.23"
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 50
 #define AMP_ENABLE_DELAY 1000
@@ -131,6 +131,7 @@ void setup()
 
     // disable amplifier to save power
     boombox.ampDisable();       // disable amplifier 
+    digitalWrite(boombox.pinMute, LOW); // mute output
     
     // display banner for version and diagnostic info
     boombox.dispBanner();
@@ -276,17 +277,21 @@ void loop()
                     // sounds are partitioned by folder
                     nextSound += meta.list1.maxSounds;
                 }
-        
+
                 // enable amp
-                boombox.ampEnable();
+                boombox.ampEnable();       
                 delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+                digitalWrite(boombox.pinMute, HIGH);                
         
                 // play sound based on randomized playlist
                 printf_P(PSTR("Playing sound index %d from playlist %d.\n"), nextSound, activePlaylist);
                 boombox.playBusy(nextSound);    
-    
-                // disable amp before going to sleep
-                boombox.ampDisable();     
+
+                // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+                // with additional delay after to allow amp to shut down
+                digitalWrite(boombox.pinMute, LOW); 
+                delay(500);
+                boombox.ampDisable();                    
                         
                 // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
                 // to be triggered.

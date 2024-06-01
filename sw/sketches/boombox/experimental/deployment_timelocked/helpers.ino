@@ -25,6 +25,7 @@ void selectMode()
     Serial.flush();
 }
 
+
 /************************************************************************/
 //    
 //    
@@ -44,6 +45,41 @@ ts_t rtcGetTime()
     time.sec = rtc.getSecond();
     return time;   
 }
+
+/************************************************************************/
+//    
+//    
+/************************************************************************/
+bool withinActiveTime(uint8_t timeHour, uint8_t timeMin) 
+{
+    uint16_t target, hour, min, startTime, endTime, duration, timeOn;
+    
+    // calculates miinutes fro midnight for target
+    target = timeHour * 60 + timeMin;
+     
+    // calculate onTime and offTime as minutes from midnight
+    startTime = (meta.onTime.hour * 60) + meta.onTime.min;
+    endTime = (meta.offTime.hour * 60) + meta.offTime.min;
+
+    // calculate total duration of active period
+    duration = (endTime - startTime + MIN_PER_DAY) % MIN_PER_DAY;
+
+    // check if our current time falls within the onTime
+    timeOn = (target - startTime + MIN_PER_DAY) % MIN_PER_DAY;
+
+    printf_P(PSTR("Target: %d, startTime: %d, endTime: %d, timeon: %d, duration: %d\n"), target, startTime, endTime, timeOn, duration);
+    Serial.flush();
+
+    // check if we're within our active duration
+    if (timeOn < duration) 
+    {
+        return 1;  //within interval
+    }
+    else
+    {
+        return 0;  //not within interval
+    }
+}
 #endif  
 
 /**************************************************************************/
@@ -60,7 +96,6 @@ char *rtcPrintTimeAndDate()
 #endif    
     return bufTime;
 }
-
 
 /**************************************************************************/
 /*!

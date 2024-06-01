@@ -22,7 +22,7 @@
 #endif
 
 #define TESTONLY 0
-#define SKETCH_VERSION "1.18-RAMTEST"
+#define SKETCH_VERSION "1.23-RAMTEST"
 
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 30
@@ -120,7 +120,8 @@ void setup()
 
     // enable power to LED ports
     boombox.auxEnable();
-    
+    digitalWrite(boombox.pinMute, LOW); // mute output
+
     // LED initialization
     strip0.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
     strip0.show();            // Turn OFF all pixels ASAP
@@ -194,6 +195,7 @@ void loop()
             // enable amp
             boombox.ampEnable();       
             delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+            digitalWrite(boombox.pinMute, HIGH);    
 
             // play sound based on randomized playlist
             boombox.play(nextSound);  
@@ -219,10 +221,10 @@ void loop()
 
             // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
             // with additional delay after to allow amp to shut down
+            digitalWrite(boombox.pinMute, LOW); 
             delay(500);
-            boombox.ampDisable();  
-            delay(1000);   
-                    
+            boombox.ampDisable();      
+                
             // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
             // to be triggered.
             now = millis();

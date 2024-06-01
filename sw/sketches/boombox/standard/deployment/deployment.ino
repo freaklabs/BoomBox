@@ -29,7 +29,7 @@
 #define CMD_MODE_TIME_LIMIT 30
 #define START_WAIT_TIME 5000
 #define ONE_MINUTE 60000
-#define STRUCT_VERSION 1
+#define STRUCT_VERSION 2
 
 SoftwareSerial ss(9, 8);
 

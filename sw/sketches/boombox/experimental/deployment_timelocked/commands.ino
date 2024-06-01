@@ -7,13 +7,17 @@ void cmdTableInit()
     cmd.add("settime", cmdSetDateTime);
     cmd.add("gettime", cmdGetDateTime);     
     cmd.add("setname", cmdSetName);
+    cmd.add("setid", cmdSetId);
     cmd.add("setmode", cmdSetMode);
     cmd.add("setmaxsounds", cmdSetMaxSounds);
     cmd.add("setshuffle", cmdSetShuffle);
+    cmd.add("setinterval", cmdSetInterval);
     cmd.add("setdelay", cmdSetDelay);
     cmd.add("setoffdelay", cmdSetOffDelay);
-    cmd.add("setplaytime", cmdSetPlayTime);
-    cmd.add("initplaylist", cmdInitPlaylist);
+    cmd.add("setactive", cmdOnTime);
+    cmd.add("setinactive", cmdOffTime);
+    cmd.add("enbtime", cmdTimeLockEnable);
+    cmd.add("testactive", cmdTestActive);
     cmd.add("config", cmdDumpConfig);
     cmd.add("normal", cmdSetNormal);
     cmd.add("help", cmdHelp);    
@@ -34,57 +38,67 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("resume        - Resume sound playing. Usage: 'resume'"));
     Serial.println(F("sleep         - Go into sleep mode. Need to reset to exit sleep mode. Usage: 'sleep'"));
     Serial.println(F("setname       - Set name. Usage: 'setname <name>'"));
-    Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));    
+    Serial.println(F("setid         - Set boombox ID. Usage: 'setid <num from 0-255>'"));
+    Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));
     Serial.println(F("setmaxsounds  - Set max number of sounds. Usage: 'setmaxsounds <num>'"));
     Serial.println(F("setshuffle    - Set shuffle mode. Usage: 'setshuffle <0=standalone, 1=camera trap>'"));
+    Serial.println(F("setinterval   - Set interval. Currently unused."));
     Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in seconds>'"));
     Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in seconds>'"));    
-    Serial.println(F("setplaytime   - Set time in minutes past the hour to perform playback. Usage: 'setplaytime <mins>'"));
+    Serial.println(F("setactivetime - Set active time. This is the starting time it will allow playback from."));
+    Serial.println(F("setinactivetime   - Set inactive time. From this time, playback will not be allowed"));
+    Serial.println(F("timelockenable    - Enable timelock. When enabled, playback is only allowed between the active time and inactive time."));    
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("normal        - Go into normal (deployment) mode and exit command line mode. Usage: 'normal'"));
 }
+
 /********************************************************************/
 // 
 /********************************************************************/
-void cmdInitPlaylist(int argCnt, char **args)
+void cmdTestActive(int argCnt, char **args)
 {
-    (void) argCnt;
-    boombox.initPlaylist();
-    boombox.dumpPlaylist();
+    uint8_t hr = cmd.conv(args[1], 10);
+    uint8_t min = cmd.conv(args[2],10);   
+    printf_P(PSTR("Time entered: %02d:%02d. %s active time.\n"), hr, min, withinActiveTime(hr, min)?"Within" : "Not within");
 }
 
 /********************************************************************/
 // 
 /********************************************************************/
-void cmdSetPlayTime(int argCnt, char **args)
+void cmdOnTime(int argCnt, char **args)
 {
-    (void) argCnt;
-    
-    uint8_t min;
+    uint8_t hr, min;
 
     EEPROM.get(EEPROM_META_LOC, meta);
-    min = cmd.conv(args[1]); 
-    meta.playbackTime = min; 
+    hr = cmd.conv(args[1], 10);
+    min = cmd.conv(args[2],10);    
+    meta.onTime.hour = hr;
+    meta.onTime.min = min;
     EEPROM.put(EEPROM_META_LOC, meta);    
-    printf_P(PSTR("Playback will occur %d mins after each hour.\n"), min);
+    printf_P(PSTR("Active Time = %02d:%02d.\n"), hr, min);
 }
 
-/************************************************************/
-//
-/************************************************************/
-void cmdSetMaxSounds(int argCnt, char **args)
+/********************************************************************/
+// 
+/********************************************************************/
+void cmdOffTime(int argCnt, char **args)
 {
-  if (argCnt != 2)
-  {
-    Serial.println("Incorrect number of arguments.");
-    return;
-  }
+    uint8_t hr, min;
 
-  uint16_t maxSounds = cmd.conv(args[1]);
-  EEPROM.get(EEPROM_META_LOC, meta);
-  meta.maxSounds = maxSounds;
-  EEPROM.put(EEPROM_META_LOC, meta);
-  boombox.setMaxSounds(meta.maxSounds);
+    EEPROM.get(EEPROM_META_LOC, meta);
+    hr = cmd.conv(args[1], 10);
+    min = cmd.conv(args[2],10);    
+    meta.offTime.hour = hr;
+    meta.offTime.min = min;
+    EEPROM.put(EEPROM_META_LOC, meta);    
+    printf_P(PSTR("Inactive Time = %02d:%02d.\n"), hr, min);
+}
+
+/********************************************************************/
+// 
+/********************************************************************/
+void cmdTimeLockEnable(int argCnt, char **args)
+{
 }
 
 /********************************************************************/
@@ -119,7 +133,7 @@ void cmdSetDateTime(int argCnt, char **args)
     sec = strtol(args[6], NULL, 10);
 
     rtc.setDateTime(day, 0, mon, 0, year, hr, min, sec);      
-    printf_P(PSTR("Now = %s.\n"), boombox.rtcPrintTimeAndDate());
+    printf_P(PSTR("Now = %s.\n"), rtcPrintTimeAndDate());
 #endif    
 }
 
@@ -132,7 +146,7 @@ void cmdGetDateTime(int argCnt, char **args)
     (void) argCnt;
     (void) args;
         
-    printf_P(PSTR("Now = %s.\n"), boombox.rtcPrintTimeAndDate());
+    printf_P(PSTR("Now = %s.\n"), rtcPrintTimeAndDate());
 #endif    
 }
 
@@ -183,6 +197,22 @@ void cmdSetOffDelay(int argCnt, char **args)
   meta.offDelayTime = offDelay;
   EEPROM.put(EEPROM_META_LOC, meta);
 }
+/************************************************************/
+//
+/************************************************************/
+void cmdSetId(int argCnt, char **args)
+{
+  if (argCnt != 2)
+  {
+    Serial.println(F("Incorrect number of arguments."));
+    return;
+  }
+
+  uint8_t id = cmd.conv(args[1]);
+  EEPROM.get(EEPROM_META_LOC, meta);
+  meta.devID = id;
+  EEPROM.put(EEPROM_META_LOC, meta);
+}
 
 /************************************************************/
 //
@@ -211,6 +241,24 @@ void cmdSetMode(int argCnt, char **args)
 /************************************************************/
 //
 /************************************************************/
+void cmdSetMaxSounds(int argCnt, char **args)
+{
+  if (argCnt != 2)
+  {
+    Serial.println("Incorrect number of arguments.");
+    return;
+  }
+
+  uint16_t maxSounds = cmd.conv(args[1]);
+  EEPROM.get(EEPROM_META_LOC, meta);
+  meta.maxSounds = maxSounds;
+  EEPROM.put(EEPROM_META_LOC, meta);
+  boombox.setMaxSounds(meta.maxSounds);
+}
+
+/************************************************************/
+//
+/************************************************************/
 void cmdSetShuffle(int argCnt, char **args)
 {
   if (argCnt != 2)
@@ -223,6 +271,34 @@ void cmdSetShuffle(int argCnt, char **args)
   EEPROM.get(EEPROM_META_LOC, meta);
   meta.shuffleEnable = shuffleEnb;
   EEPROM.put(EEPROM_META_LOC, meta);
+
+  if (meta.shuffleEnable == 0)
+  {
+    boombox.shuffleEnable(0);
+    boombox.initPlaylist();
+  }
+  else
+  {
+    boombox.shuffleEnable(1);
+    boombox.shufflePlaylist();
+  }
+}
+
+/************************************************************/
+//
+/************************************************************/
+void cmdSetInterval(int argCnt, char **args)
+{
+    if (argCnt != 2)
+    {
+        Serial.println("Incorrect number of arguments.");
+        return;
+    }
+    
+    int16_t interval = cmd.conv(args[1]);
+    EEPROM.get(EEPROM_META_LOC, meta);
+    meta.devInterval = interval;
+    EEPROM.put(EEPROM_META_LOC, meta);
 }
 
 /**************************************************************************/
@@ -233,13 +309,17 @@ void cmdDumpConfig(int argCnt, char **args)
     (void) argCnt;
     (void) args;
 
-    printf_P(PSTR("Device Name: \t%s\n"), meta.devName);
-    printf_P(PSTR("Shuffle:     \t%s\n"), meta.shuffleEnable ? "TRUE" : "FALSE");
-    printf_P(PSTR("Device Mode: \t%s\n"), meta.devMode ? "TRAILCAM" : "STANDALONE");
-    printf_P(PSTR("Max Sounds:  \t%d\n"), meta.maxSounds);
-    printf_P(PSTR("Delay Time:  \t%d\n"), meta.delayTime);
-    printf_P(PSTR("Off Delay:   \t%d\n"), meta.offDelayTime);
-    printf_P(PSTR("Playback Time: \t%d\n"), meta.playbackTime);
+    Serial.print(F("Device Name: \t")); Serial.println(meta.devName); 
+    Serial.print(F("Device ID:   \t")); Serial.println(meta.devID);
+    Serial.print(F("Shuffle:     \t")); Serial.println(meta.shuffleEnable); 
+    Serial.print(F("Device Mode: \t")); Serial.println(meta.devMode ? "TRAILCAM" : "STANDALONE");
+    Serial.print(F("Max Sounds:  \t")); Serial.println(meta.maxSounds);
+    Serial.print(F("Delay Time:  \t")); Serial.println(meta.delayTime);
+    Serial.print(F("Off Delay:   \t")); Serial.println(meta.offDelayTime);
+    Serial.print(F("Interval:    \t")); Serial.println(meta.devInterval);
+    Serial.print(F("TimeLockEnb: \t")); Serial.println(meta.timeLockEnable ? "ON" : "OFF");
+    printf_P(PSTR("Active Time: \t%02d:%02d\n"), meta.onTime.hour, meta.onTime.min);
+    printf_P(PSTR("Inactive Time: \t%02d:%02d\n"), meta.offTime.hour, meta.offTime.min); 
 }
 
 /************************************************************/

@@ -342,14 +342,14 @@ void cmdDumpConfig(int argCnt, char **args)
     
     printf_P(PSTR("Delay Time:  \t%d\n"), meta.delayTime);
     printf_P(PSTR("Off Delay:   \t%d\n"), meta.offDelayTime);
-    printf_P(PSTR("Start time Playlist 1: \t\t%d:00\n"), meta.list1Start);
-    printf_P(PSTR("End time Playlist 1: \t\t%d:00\n"), meta.list1End);
-    printf_P(PSTR("Max Sounds Playlist 1: \t\t%d\n"), meta.list1.maxSounds);
-    printf_P(PSTR("Max Sounds Playlist 2: \t\t%d\n"), meta.list2.maxSounds);
+    printf_P(PSTR("Start time Playlist 1: \t%d:00\n"), meta.list1Start);
+    printf_P(PSTR("End time Playlist 1: \t%d:00\n"), meta.list1End);
+    printf_P(PSTR("Max Sounds Playlist 1: \t%d\n"), meta.list1.maxSounds);
+    printf_P(PSTR("Max Sounds Playlist 2: \t%d\n"), meta.list2.maxSounds);
     printf_P(PSTR("Playback interval Playlist 1: \t%d\n"), meta.list1.interval);
     printf_P(PSTR("Playback interval Playlist 2: \t%d\n"), meta.list2.interval);
-    printf_P(PSTR("Shuffle Playlist 1: \t\t%s\n"), meta.list1.shuffleEnb ? "TRUE" : "FALSE");
-    printf_P(PSTR("Shuffle Playlist 2: \t\t%s\n"), meta.list2.shuffleEnb ? "TRUE" : "FALSE");
+    printf_P(PSTR("Shuffle Playlist 1: \t%s\n"), meta.list1.shuffleEnb ? "TRUE" : "FALSE");
+    printf_P(PSTR("Shuffle Playlist 2: \t%s\n"), meta.list2.shuffleEnb ? "TRUE" : "FALSE");
 }
 
 /************************************************************/

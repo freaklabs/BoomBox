@@ -21,7 +21,7 @@
 #endif
 
 #define TESTONLY 0
-#define SKETCH_VERSION "1.21"
+#define SKETCH_VERSION "1.23"
 
 #define EEPROM_META_LOC 0
 #define MAX_FIELD_SIZE 20
@@ -121,6 +121,8 @@ void setup()
 #endif        
 
     boombox.ampDisable();       // disable amplifier  
+    digitalWrite(boombox.pinMute, LOW); // mute output
+
 
     // display banner for version and diagnostic info
     boombox.dispBanner();
@@ -199,19 +201,20 @@ void loop()
                   
                 // retrieve next sound index
                 nextSound = boombox.getNextSound();        
-    
+
                 // enable amp
                 boombox.ampEnable();       
                 delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
-    
+                digitalWrite(boombox.pinMute, HIGH);    
+
                 // play sound based on randomized playlist
                 boombox.playBusy(nextSound);    
-    
+
                 // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
                 // with additional delay after to allow amp to shut down
+                digitalWrite(boombox.pinMute, LOW); 
                 delay(500);
-                boombox.ampDisable();  
-                delay(1000);   
+                boombox.ampDisable();                   
                         
                 // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
                 // to be triggered.

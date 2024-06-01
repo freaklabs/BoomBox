@@ -131,7 +131,6 @@ void setup()
 
     // disable amplifier to save power
     boombox.ampDisable();       // disable amplifier 
-    digitalWrite(boombox.pinMute, LOW); // mute output
     
     // display banner for version and diagnostic info
     boombox.dispBanner();
@@ -199,8 +198,8 @@ void loop()
 
     if (normalMode)
     {
-        // minute interrupt received
-        if (boombox.rtcIntpRcvd() || boombox.isAuxEvent())
+        // manage playlist timing
+        if (boombox.rtcIntpRcvd())
         {            
             // get current time so we can parse it
             currentTime = boombox.rtcGetTime();
@@ -240,77 +239,75 @@ void loop()
                     interval = meta.list2.interval;
                 }
             }
-    
-            // decrement interval counter
-            if (interval > 0)
-            {
-                interval--;
-                printf_P(PSTR("Interval: %d.\n"), interval);
-            }
-            else
-            {
-                // reload interval
-                if (activePlaylist == 1)
-                {
-                    interval = meta.list1.interval;
-                }
-                else
-                {
-                    interval = meta.list2.interval;
-                }
-    
-                // play sound
-                Serial.println(F("playback!!!"));
-                
-                // delay for delayTime milliseconds after trigger has happened. 
-                // This delays playing the sound immediately after trigger 
-                now = millis();
-                while (elapsedTime(now) < ((uint32_t)meta.delayTime * 1000))
-                {
-                    wdt_reset();
-                }
-                  
-                // retrieve next sound index
-                nextSound = boombox.getNextSound();  
-                if (activePlaylist == 2)
-                {
-                    // sounds are partitioned by folder
-                    nextSound += meta.list1.maxSounds;
-                }
 
-                // enable amp
-                boombox.ampEnable();       
-                delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
-                digitalWrite(boombox.pinMute, HIGH);                
-        
-                // play sound based on randomized playlist
-                printf_P(PSTR("Playing sound index %d from playlist %d.\n"), nextSound, activePlaylist);
-                boombox.playBusy(nextSound);    
-
-                // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
-                // with additional delay after to allow amp to shut down
-                digitalWrite(boombox.pinMute, LOW); 
-                delay(500);
-                boombox.ampDisable();                    
-                        
-                // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
-                // to be triggered.
-                now = millis();
-                while (elapsedTime(now) < ((uint32_t)meta.offDelayTime * 1000))
-                {
-                    wdt_reset();
-                }                                      
-            }
             // restart timer
             rtc.resetTimer();
             
             // clear interrupt flag
             boombox.rtcClearIntp();        
+        }
     
-            // clear interrupt flag
-            boombox.clearAuxFlag();    
-            Serial.flush();                       
-        }    
+        // manage trigger event for playback
+        if (boombox.isAuxEvent())
+        {
+            // reload interval
+            if (activePlaylist == 1)
+            {
+                interval = meta.list1.interval;
+            }
+            else
+            {
+                interval = meta.list2.interval;
+            }
+
+            // play sound
+            Serial.println(F("playback!!!"));
+            
+            // delay for delayTime milliseconds after trigger has happened. 
+            // This delays playing the sound immediately after trigger 
+            now = millis();
+            while (elapsedTime(now) < ((uint32_t)meta.delayTime * 1000))
+            {
+                wdt_reset();
+            }
+              
+            // retrieve next sound index
+            nextSound = boombox.getNextSound();  
+            if (activePlaylist == 2)
+            {
+                // sounds are partitioned by folder
+                nextSound += meta.list1.maxSounds;
+            }
+    
+            // enable amp
+            boombox.ampEnable();
+            delay(AMP_ENABLE_DELAY); // this delay is short and just so the start of the sound doesn't get cut off as amp warms up
+            digitalWrite(boombox.pinMute, HIGH);
+
+    
+            // play sound based on randomized playlist
+            printf_P(PSTR("Playing sound index %d from playlist %d.\n"), nextSound, activePlaylist);
+            boombox.playBusy(nextSound);    
+
+
+            // disable amp before going to sleep. Short delay so sound won't get cut off too suddenly
+            // with additional delay after to allow amp to shut down
+            digitalWrite(boombox.pinMute, LOW); 
+            delay(500);
+            boombox.ampDisable();           
+
+            // delay for offDelayTime milliseconds. This is the time after playback finishes but we do not allow another sound
+            // to be triggered.
+            now = millis();
+            while (elapsedTime(now) < ((uint32_t)meta.offDelayTime * 1000))
+            {
+                wdt_reset();
+            }                                      
+        }
+
+        // clear interrupt flag
+        boombox.clearAuxFlag();    
+        Serial.flush();                       
         
         // go to sleep here
         boombox.sleep();
