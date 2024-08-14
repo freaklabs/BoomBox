@@ -22,7 +22,7 @@
     Rtc_Pcf8563 rtc; 
 #endif
 
-#define SKETCH_VERSION "1.23"
+#define SKETCH_VERSION "1.23a"
 #define TESTONLY 0
 
 #define EEPROM_META_LOC 0
@@ -31,6 +31,7 @@
 #define CMD_MODE_TIME_LIMIT 30
 #define START_WAIT_TIME 5000
 #define ONE_MINUTE 60000
+#define STRUCT_VERSION 15
 
 SoftwareSerial ss(9, 8);
 
@@ -59,6 +60,7 @@ uint8_t timeCount = 0;
 uint32_t now;
 uint32_t cmdModeTimeCnt;
 uint32_t cmdModeTimeLimit = CMD_MODE_TIME_LIMIT * ONE_MINUTE;
+uint8_t *playlist;
 
 /************************************************************/
 // setup
@@ -71,6 +73,7 @@ void setup()
     
     // initialize command line
     cmd.begin(57600);
+    cmdTableInit();  
 
     // get metadata
     EEPROM.get(EEPROM_META_LOC, meta);
@@ -118,7 +121,6 @@ void setup()
     boombox.ampDisable();       // disable amplifier  
     digitalWrite(boombox.pinMute, LOW); // mute output
 
-
     // display banner for version and diagnostic info
     boombox.dispBanner();
     Serial.print(F("Boombox Deployment Timelocked Sketch version: "));
@@ -127,20 +129,34 @@ void setup()
     printf("Current time is %s.\n", rtcPrintTimeAndDate());  
     Serial.println(F("-------------------------------------------"));
     
-    // set maximum sounds based on metadata
-    boombox.setMaxSounds(meta.maxSounds);      
-    cmdTableInit();  
+    // setup boombox configuration
+    // set max sounds, set the playlist to be active, then initialize playlist
+    boombox.setMaxSounds(meta.maxSounds);
+    if ((playlist = (uint8_t *)malloc(meta.maxSounds)) == NULL)
+    {
+        Serial.println(F("No memory to initialize playlist!!!"));
+        while(1); // stay here forever!
+    }
+    boombox.setActivePlaylist(playlist);
+    boombox.initPlaylist(playlist, meta.maxSounds, meta.shuffleEnable);
     
+#if (BOOMBOX == 1) 
     // set the playlist shuffle functionality based on metadata settings
     // default is sequential ordering
     if (meta.shuffleEnable == 1)
     {
-        boombox.shuffleSeed();
-        boombox.shuffleEnable(true);
+        ts_t currentTime = boombox.rtcGetTime();
+        randomSeed(currentTime.sec);
+        boombox.setShuffle(true);
     } 
-
-    // create the initial playlist
-    boombox.initPlaylist();  
+#else
+    if (meta.shuffleEnable == 1)
+    {
+        boombox.shuffleSeed();
+    }
+#endif // BOOMBOX
+    // clear interrupt flag if it is set
+    boombox.clearAuxFlag(); 
 
     // select if we want to go into developer mode or deployment mode
     selectMode();                 
@@ -153,8 +169,6 @@ void loop()
 {
     uint8_t nextSound;
 
-    cmd.poll();
-    
     wdt_reset();
     if (normalMode)
     {        
