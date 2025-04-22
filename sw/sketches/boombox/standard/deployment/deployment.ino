@@ -129,7 +129,7 @@ void setup()
     boombox.setMaxSounds(meta.maxSounds);
     if ((playlist = (uint8_t *)malloc(meta.maxSounds)) == NULL)
     {
-        Serial.println(F("No memoryto initialize playlist!!!"));
+        Serial.println(F("No memory to initialize playlist!!!"));
         while(1); // stay here forever!
     }
     boombox.setActivePlaylist(playlist);

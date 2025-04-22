@@ -32,9 +32,9 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("vol           - Set volume. Usage: 'vol <num from 1-30>'"));
     Serial.println(F("setname       - Set name. Usage: 'setname <name>'"));
     Serial.println(F("setid         - Set boombox ID. Usage: 'setid <num from 0-255>'"));
-    Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));
+    Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=standalone, 1=camera trap>'"));
     Serial.println(F("setmaxsounds  - Set max number of sounds. Usage: 'setmaxsounds <num>'"));
-    Serial.println(F("setshuffle    - Set shuffle mode. Usage: 'setshuffle <0=standalone, 1=camera trap>'"));
+    Serial.println(F("setshuffle    - Set shuffle mode. Usage: 'setshuffle <0=sequential, 1=shuffle>'"));
     Serial.println(F("setinterval   - Set interval. Currently unused."));
     Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in seconds>'"));
     Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in seconds>'"));    
