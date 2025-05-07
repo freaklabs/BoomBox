@@ -135,7 +135,7 @@ void setup()
     
     // display banner for version and diagnostic info
     boombox.dispBanner();
-    Serial.print(F("Boombox Deployment Headless Dual Playlist version: "));
+    Serial.print(F("Boombox Deployment Dual Playlist version: "));
     Serial.println(F(SKETCH_VERSION));
     Serial.println(F("Designed by FreakLabs"));
     printf("Current time is %s.\n", boombox.rtcPrintTimeAndDate());  

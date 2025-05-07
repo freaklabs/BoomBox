@@ -36,13 +36,17 @@ void cmdHelp(int argCnt, char **args)
     Serial.println(F("pause         - Pause sound playing. Usage: 'pause'"));
     Serial.println(F("resume        - Resume sound playing. Usage: 'resume'"));
     Serial.println(F("sleep         - Go into sleep mode. Need to reset to exit sleep mode. Usage: 'sleep'"));
+    Serial.println(F("settime       - Set the time for the real time clock. Usage: 'settime <last two digits of year> <month> <day> <hour> <minute> <second>'"));
+    Serial.println(F("gettime       - Get the time from the real time clock.'"));    
     Serial.println(F("setname       - Set name. Usage: 'setname <name>'"));
-    Serial.println(F("setmode       - Set test mode. Usage: 'setmode <0=normal, 1=test>'"));    
-    Serial.println(F("setmaxsounds  - Set max number of sounds for playlist. Usage: 'setmaxsounds <list> <num>'"));
-    Serial.println(F("setshuffle    - Set shuffle mode for list. Usage: 'setshuffle <list> <0=sequential, 1=shuffle>'"));
+    Serial.println(F("setmode       - Set connection mode. Standalone = triggered by pushbutton. Trailcam = triggered by trialcam. Usage: 'setmode <0=STANDALONE, 1=TRAILCAM>'"));  
+    Serial.println(F("setmaxsounds  - Set max number of sounds for playlist. Usage: 'setmaxsounds <list=1 or 2> <num>'"));
+    Serial.println(F("setshuffle    - Set shuffle mode for list. Usage: 'setshuffle <list=1 or 2> <0=sequential, 1=shuffle>'"));
     Serial.println(F("setdelay      - Set delay. This is delay from trigger to playback. Usage: 'setdelay <delay in seconds>'"));
     Serial.println(F("setoffdelay   - Set offdelay. This is blackout period after playback & before next trigger is allowed. Usage: 'setoffdelay <delay in seconds>'"));    
-    Serial.println(F("setplaytime   - Set time in minutes past the hour to perform playback. Usage: 'setplaytime <mins>'"));
+    Serial.println(F("setinterval   - Set interval sounds will play at. Usage: 'setinterval <mins>'"));
+    Serial.println(F("setstart      - Set start time time of playlist 1 in  24-hour format. Usage: 'setstart <time in hours>'"));
+    Serial.println(F("setend        - Set end time time of playlist 1 in  24-hour format. Usage: 'setend <time in hours>'"));    
     Serial.println(F("config        - Display metadata configuration data. Usage: 'config'"));
     Serial.println(F("normal        - Go into normal (deployment) mode and exit command line mode. Usage: 'normal'"));
 }
