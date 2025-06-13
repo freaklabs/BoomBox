@@ -57,7 +57,7 @@ char bufTime[MAX_FIELD_SIZE];
 ts_t currentTime;
 uint8_t activePlaylist = 1;
 uint8_t *playlist1, *playlist2;
-uint8_t interval;
+uint16_t interval;
 bool normalMode = true;
 uint8_t timeCount = 0;
 uint32_t now;
@@ -138,7 +138,7 @@ void setup()
     Serial.print(F("Boombox Deployment Headless Dual Playlist version: "));
     Serial.println(F(SKETCH_VERSION));
     Serial.println(F("Designed by FreakLabs"));
-    printf("Current time is %s.\n", boombox.rtcPrintTimeAndDate());  
+    printf_P(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  
     Serial.println(F("-------------------------------------------"));  
     
     // set shuffle seed based on current number of seconds

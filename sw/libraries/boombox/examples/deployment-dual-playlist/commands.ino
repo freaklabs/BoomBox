@@ -60,17 +60,17 @@ void cmdTestVirtualTime(int argCnt, char **args)
     uint8_t hour = cmd.conv(args[1]);
     if (hour >= 24)
     {
-        Serial.println("Value out of bounds. Please enter a number less than 24 for hour.");
+        Serial.println(F("Value out of bounds. Please enter a number less than 24 for hour."));
         return;
     }
     
     if ((hour >= meta.list1Start) && (hour < meta.list1End))
     {
-        Serial.println("Playlist 1 should be active");
+        Serial.println(F("Playlist 1 should be active"));
     }
     else
     {
-        Serial.println("Playlist 2 should be active");
+        Serial.println(F("Playlist 2 should be active"));
     }
 }
 
@@ -89,7 +89,7 @@ void cmdDumpPlaylist(int argCnt, char **args)
 
     if (listNum == 1)
     {
-        printf("Playlist 1:\n");
+        Serial.println(F("Playlist 1:\n"));
         for (int i=0; i<meta.list1.maxSounds; i++)
         {
             printf("Index: %d, %d\n", i, playlist1[i]);
@@ -97,7 +97,7 @@ void cmdDumpPlaylist(int argCnt, char **args)
     }
     else
     {
-        printf("Playlist 2:\n");
+        Serial.println(F("Playlist 2:\n"));
         for (int i=0; i<meta.list2.maxSounds; i++)
         {
             printf("Index: %d, %d\n", i, playlist2[i]);
@@ -307,7 +307,7 @@ void cmdSetMode(int argCnt, char **args)
 {
     if (argCnt != 2)
     {
-        Serial.println("Incorrect number of arguments.");
+        Serial.println(F("Incorrect number of arguments."));
         return;
     }
     
@@ -315,8 +315,8 @@ void cmdSetMode(int argCnt, char **args)
     
     if (mode > 1)
     {
-        printf("ERROR: Invalid value. Setting to 0.\n");
-        printf("Usage: 0 = STANDALONE mode, 1 = TRAILCAM mode\n");
+        Serial.println(F("ERROR: Invalid value. Setting to 0.\n"));
+        Serial.println(F("Usage: 0 = STANDALONE mode, 1 = TRAILCAM mode\n"));
     }
     
     EEPROM.get(EEPROM_META_LOC, meta);

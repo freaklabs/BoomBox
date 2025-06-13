@@ -66,18 +66,18 @@ void cmdDumpPlaylist(int argCnt, char **args)
 
     if (listNum == 1)
     {
-        printf("Playlist 1:\n");
+        Serial.println(F("Playlist 1:\n"));
         for (int i=0; i<meta.list1.maxSounds; i++)
         {
-            printf("Index: %d, %d\n", i, playlist1[i]);
+            printf_P(PSTR("Index: %d, %d\n"), i, playlist1[i]);
         }
     }
     else
     {
-        printf("Playlist 2:\n");
+        Serial.println(F("Playlist 2:\n"));
         for (int i=0; i<meta.list2.maxSounds; i++)
         {
-            printf("Index: %d, %d\n", i, playlist2[i]);
+            printf_P(PSTR("Index: %d, %d\n"), i, playlist2[i]);
         }        
     }
 }
@@ -284,7 +284,7 @@ void cmdSetMode(int argCnt, char **args)
 {
     if (argCnt != 2)
     {
-        Serial.println("Incorrect number of arguments.");
+        Serial.println(F("Incorrect number of arguments."));
         return;
     }
     

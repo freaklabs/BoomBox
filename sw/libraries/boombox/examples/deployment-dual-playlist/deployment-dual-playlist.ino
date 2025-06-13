@@ -138,7 +138,7 @@ void setup()
     Serial.print(F("Boombox Deployment Dual Playlist version: "));
     Serial.println(F(SKETCH_VERSION));
     Serial.println(F("Designed by FreakLabs"));
-    printf("Current time is %s.\n", boombox.rtcPrintTimeAndDate());  
+    printf_P(PSTR("Current time is %s.\n"), boombox.rtcPrintTimeAndDate());  
     Serial.println(F("-------------------------------------------"));  
     
     // set shuffle seed based on current number of seconds
@@ -153,7 +153,7 @@ void setup()
     Serial.println(F("Initializing playlist 2..."));
     playlist2 = (uint8_t *)malloc(meta.list2.maxSounds);
     boombox.initPlaylist(playlist2, meta.list2.maxSounds, meta.list2.shuffleEnb);
-
+    
     // set active playlist and parameters
     if ((currentTime.hour >= meta.list1Start) && (currentTime.hour < meta.list1End))
     {
